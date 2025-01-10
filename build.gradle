@@ -30,7 +30,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // BaseEntity에서 사용되는 AuditOverride 어노테이션을 위해 사용
+    implementation 'org.springframework.data:spring-data-envers'
+
     compileOnly 'org.projectlombok:lombok'
+
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
