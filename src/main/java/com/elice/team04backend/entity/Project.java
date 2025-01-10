@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -20,5 +23,19 @@ public class Project extends BaseEntity{
     @Column(name = "project_id", nullable = false)
     private Long id;
 
+    @Column(name = "project_key", nullable = false)
+    private String projectKey;
+
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "issue_count", nullable = false)
+    private Long issueCount;
+
+    @OneToMany(mappedBy = "project")
+    private List<UserProjectRole> userProjectRoles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "project")
+    private List<Issue> issues = new ArrayList<>();
 
 }

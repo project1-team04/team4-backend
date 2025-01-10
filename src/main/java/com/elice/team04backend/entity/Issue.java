@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -22,19 +25,19 @@ public class Issue extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "label_id", nullable = false)
+    @JoinColumn(name = "label_id", nullable = false)
     private Label labelId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "project_id", nullable = false)
-    private Project projectId;
+    @JoinColumn(name = "project_id", nullable = false)
+    private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "assignee_user_id", nullable = false)
+    @JoinColumn(name = "assignee_user_id", nullable = false)
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @Column(name = "reporter_user_id", nullable = false)
+    @JoinColumn(name = "reporter_user_id", nullable = false)
     private User reporter;
 
     @Column(name = "issue_key", nullable = false)
@@ -49,4 +52,7 @@ public class Issue extends BaseEntity {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
+
+    @OneToMany(mappedBy = "issue")
+    private List<IssueImage> issueImages = new ArrayList<>();
 }

@@ -10,6 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -26,6 +29,9 @@ public class User extends BaseEntity{
     private String email;
 
     @Column(name = "username", nullable = false, length = 255)
+    private String username;
+
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "profile_image")
@@ -38,10 +44,22 @@ public class User extends BaseEntity{
     @Enumerated(EnumType.STRING)
     private Provider provider;
 
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+
     @Column(name = "provider_id")
     private String providerId;
 
-    @Column(name = "status")
-    @Enumerated(EnumType.STRING)
-    private UserStatus status;
+    @OneToMany(mappedBy = "user")
+    private List<UserProjectRole> userProjectRoles = new ArrayList<>();
+
+    //-----------------------------------------------------------
+    @OneToMany(mappedBy = "assignee")
+    private List<Issue> assignees = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reporter")
+    private List<Issue> reporters = new ArrayList<>();
+    //-----------------------------------------------------------
+
 }
