@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
@@ -26,9 +29,11 @@ public class Label extends BaseEntity{
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "hexcode", nullable = false)
+    @Column(name = "hexcode", nullable = false, length = 7)
     private String hexCode;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private Issue issue;
+    @OneToMany(mappedBy = "label")
+    private List<Issue> issues = new ArrayList<>();
+
+
 }
