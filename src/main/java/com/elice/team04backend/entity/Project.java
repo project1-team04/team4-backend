@@ -1,6 +1,8 @@
 package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.entity.BaseEntity;
+import com.elice.team04backend.dto.Project.ProjectResponseDto;
+import com.elice.team04backend.dto.Project.ProjectUpdateDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @AuditOverride(forClass = BaseEntity.class)
-public class Project extends BaseEntity{
+public class Project extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "project_id", nullable = false)
@@ -38,4 +41,17 @@ public class Project extends BaseEntity{
     @OneToMany(mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Issue> issues = new ArrayList<>();
 
+    public void update(ProjectUpdateDto projectUpdateDto) {
+        this.name = projectUpdateDto.getName();
+    }
+
+    public ProjectResponseDto from() {
+        return ProjectResponseDto.builder()
+                .id(this.id)
+                .projectKey(this.projectKey)
+                .issueCount(this.issueCount)
+                .name(this.name)
+                .build();
+
+    }
 }
