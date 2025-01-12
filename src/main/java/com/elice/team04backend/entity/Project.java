@@ -26,7 +26,7 @@ public class Project extends BaseEntity{
     @Column(name = "project_key", nullable = false)
     private String projectKey;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "issue_count", nullable = false)
@@ -35,7 +35,7 @@ public class Project extends BaseEntity{
     @OneToMany(mappedBy = "project")
     private List<UserProjectRole> userProjectRoles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Issue> issues = new ArrayList<>();
 
 }

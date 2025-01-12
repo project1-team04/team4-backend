@@ -25,13 +25,13 @@ public class User extends BaseEntity{
     @Column(name = "user_id", nullable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false, length = 255)
+    @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "username", nullable = false, length = 255)
+    @Column(name = "username", nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Column(name = "profile_image")
@@ -51,15 +51,11 @@ public class User extends BaseEntity{
     @Column(name = "provider_id")
     private String providerId;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserProjectRole> userProjectRoles = new ArrayList<>();
-
-    //-----------------------------------------------------------
     @OneToMany(mappedBy = "assignee")
-    private List<Issue> assignees = new ArrayList<>();
+    private List<Issue> assigneeIssues = new ArrayList<>();
 
     @OneToMany(mappedBy = "reporter")
-    private List<Issue> reporters = new ArrayList<>();
-    //-----------------------------------------------------------
+    private List<Issue> reporterIssues = new ArrayList<>();
+
 
 }
