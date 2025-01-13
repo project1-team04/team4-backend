@@ -2,7 +2,7 @@ package com.elice.team04backend.service.Impl;
 
 import com.elice.team04backend.common.constant.UserStatus;
 import com.elice.team04backend.dto.Project.ProjectRequestDto;
-import com.elice.team04backend.entity.Project;
+import com.elice.team04backend.dto.Project.ProjectResponseDto;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserRepository;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -42,13 +41,24 @@ class ProjectServiceImplTest {
     @Test
     void 프로젝트_생성_테스트() {
         ProjectRequestDto projectRequestDto = new ProjectRequestDto("my project");
+        ProjectResponseDto findResponseDto = projectService.postProject(projectRequestDto);
+        log.info("id = {}", findResponseDto.getId());
+        log.info("name = {}", findResponseDto.getName());
+        log.info("issueCnt = {}", findResponseDto.getIssueCount());
+        log.info("projectKey = {}", findResponseDto.getProjectKey());
+        assertThat(findResponseDto.getName()).isEqualTo(projectRequestDto.getName());
+    }
+
+    private String generatedProjectKey(ProjectRequestDto projectRequestDto) {
         StringBuilder sb = new StringBuilder();
         String[] s = projectRequestDto.getName().toUpperCase().split(" ");
-        for (int i = 0; i < s.length; i++) {
-            sb.append(s[i].charAt(0));
+        for (String value : s) {
+            char input = value.charAt(0);
+            if ('0' <= input && input <= '9') {
+                continue;
+            }
+            sb.append(input);
         }
-        log.info("{}", sb);
-
-
+        return sb.toString();
     }
 }
