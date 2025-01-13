@@ -1,4 +1,4 @@
-package com.elice.team04backend.dto.Project;
+package com.elice.team04backend.dto.project;
 
 
 import lombok.*;

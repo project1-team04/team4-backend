@@ -1,8 +1,8 @@
 package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.entity.BaseEntity;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
-import com.elice.team04backend.dto.Project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

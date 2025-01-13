@@ -1,8 +1,8 @@
 package com.elice.team04backend.service.Impl;
 
-import com.elice.team04backend.dto.Project.ProjectRequestDto;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
-import com.elice.team04backend.dto.Project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.ProjectRequestDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.service.ProjectService;

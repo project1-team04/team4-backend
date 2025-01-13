@@ -1,8 +1,8 @@
 package com.elice.team04backend.service.Impl;
 
 import com.elice.team04backend.common.constant.UserStatus;
-import com.elice.team04backend.dto.Project.ProjectRequestDto;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectRequestDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserRepository;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+
 @Transactional
 @SpringBootTest
 @Slf4j
