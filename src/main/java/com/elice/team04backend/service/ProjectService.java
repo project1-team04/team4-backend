@@ -7,9 +7,9 @@ import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import java.util.List;
 
 public interface ProjectService {
-    ProjectResponseDto getProject(Long projectId);
+    ProjectResponseDto getProjectById(Long projectId);
     List<ProjectResponseDto> getAllProjects();
     ProjectResponseDto postProject(ProjectRequestDto projectRequestDto);
-    ProjectResponseDto patchProject(ProjectUpdateDto projectUpdateDto);
+    ProjectResponseDto patchProject(Long projectId, ProjectUpdateDto projectUpdateDto);
     void deleteProject(Long projectId);
 }

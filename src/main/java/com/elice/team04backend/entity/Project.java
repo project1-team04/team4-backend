@@ -41,17 +41,21 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Issue> issues = new ArrayList<>();
 
-    public void updateName(ProjectUpdateDto projectUpdateDto) {
+    public void update(ProjectUpdateDto projectUpdateDto) {
         this.name = projectUpdateDto.getName();
+    }
+
+    public void addIssue(Issue issue) {
+        this.issues.add(issue);
+        this.issueCount = (long) this.issues.size();
     }
 
     public ProjectResponseDto from() {
         return ProjectResponseDto.builder()
-                .id(this.id)
-                .projectKey(this.projectKey)
-                .issueCount(this.issueCount)
-                .name(this.name)
+                .id(this.getId())
+                .projectKey(this.getProjectKey())
+                .issueCount(this.getIssueCount())
+                .name(this.getName())
                 .build();
-
     }
 }

@@ -19,10 +19,14 @@ public class ProjectController {
 
     private final ProjectService projectService;
 
+    /**
+     * TODO
+     * 유저 아이디로 project 찾는 메서드 추가
+     */
     @GetMapping
     public ResponseEntity<List<ProjectResponseDto>> getAllProjects() {
-        List<ProjectResponseDto> projects = projectService.getAllProjects();
-        return ResponseEntity.ok(projects);
+        List<ProjectResponseDto> projectResponseDtos = projectService.getAllProjects();
+        return ResponseEntity.ok(projectResponseDtos);
     }
 
     @PostMapping
@@ -31,24 +35,23 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ProjectResponseDto> getProject(@PathVariable Long id) {
-        ProjectResponseDto project = projectService.getProject(id);
-        return ResponseEntity.ok(project);
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectResponseDto> getProject(@PathVariable Long projectId) {
+        ProjectResponseDto projectResponseDto = projectService.getProjectById(projectId);
+        return ResponseEntity.ok(projectResponseDto);
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/{projectId}")
     public ResponseEntity<ProjectResponseDto> patchProject(
-            @PathVariable Long id,
+            @PathVariable Long projectId,
             @Valid @RequestBody ProjectUpdateDto projectUpdateDto) {
-        projectUpdateDto.setId(id);
-        ProjectResponseDto updatedProject = projectService.patchProject(projectUpdateDto);
-        return ResponseEntity.ok(updatedProject);
+        ProjectResponseDto projectResponseDto = projectService.patchProject(projectId, projectUpdateDto);
+        return ResponseEntity.ok(projectResponseDto);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        projectService.deleteProject(id);
+    @DeleteMapping("/{projectId}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long projectId) {
+        projectService.deleteProject(projectId);
         return ResponseEntity.noContent().build();
     }
 

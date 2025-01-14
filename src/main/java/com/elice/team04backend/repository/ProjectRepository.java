@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
+    /**
+     * TODO 유저 아이디별로 찾기 + 페이징처리
+     */
 }

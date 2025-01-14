@@ -16,7 +16,7 @@ public class ProjectRequestDto {
 
     public Project from(String projectKey) {
         return Project.builder()
-                .name(this.name)
+                .name(this.getName())
                 .projectKey(projectKey)
                 .issueCount(0L)
                 .build();
