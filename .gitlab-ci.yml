@@ -1,0 +1,47 @@
+stages:
+  - test
+  - build
+  - deploy
+
+cache:
+  paths:
+    - gradle/wrapper/
+    - gradle/caches/
+
+before_script:
+  - echo "Setting up environment"
+  - chmod +x ./gradlew
+
+test:
+  stage: test
+  tags:
+    - al1
+  script:
+    - echo "Running tests"
+    - ./gradlew test
+  only:
+    - merge_requests
+git 
+build:
+  stage: build
+  tags:
+    - al1
+  script:
+    - rm -rf /home/gitlab-runner/app
+    - mkdir -p /home/gitlab-runner/app
+    - echo "Building the application"
+    - ./gradlew clean build
+    - echo "Starting deployment"
+    - cp build/libs/demo-0.0.1-SNAPSHOT.jar /home/gitlab-runner/app/demo.jar
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  tags:
+    - al1
+  script:
+    - echo "cicd script running..."
+    - sh deploy.sh
+  only:
+    - main
