@@ -11,10 +11,9 @@ import lombok.*;
 public class IssueResponseDto {
     private Long id;
     private Long projectId;
-    //private Long labelId;
+    private Long labelId;
     //private Long assigneeUserId;
     //private Long reporterUserId;
-    //private Long issueKey;
     private String issueKey;
     private String description;
     private String troubleShooting;

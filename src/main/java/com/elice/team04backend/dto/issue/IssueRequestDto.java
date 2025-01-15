@@ -2,6 +2,7 @@ package com.elice.team04backend.dto.issue;
 
 import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.entity.Issue;
+import com.elice.team04backend.entity.Label;
 import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.User;
 import jakarta.validation.constraints.NotBlank;
@@ -17,8 +18,8 @@ public class IssueRequestDto {
     //@NotNull(message = "프로젝트 ID는 필수입니다.")
     private Long projectId;
 
-//    @NotNull(message = "라벨 ID는 필수입니다.")
-//    private Long labelId;
+    //@NotNull(message = "라벨 ID는 필수입니다.")
+    private Long labelId;
 
     //@NotNull(message = "담당자 ID는 필수입니다.")
     private Long assigneeUserId;
@@ -28,7 +29,7 @@ public class IssueRequestDto {
 
     //@NotBlank(message = "이슈 키는 필수입니다.")
     //private Long issueKey;
-    private String issueKey;
+    //private String issueKey;
 
     @NotBlank(message = "이슈 설명은 필수입니다.")
     private String description;
@@ -51,9 +52,10 @@ public class IssueRequestDto {
 //                .build();
 //    }
 
-    public Issue from(Project project, String generatedIssueKey) {
+    public Issue from(Project project, Label label, String generatedIssueKey) {
         return Issue.builder()
                 .project(project)
+                .label(label)
                 .issueKey(generatedIssueKey)
                 .description(description)
                 .troubleShooting(troubleShooting)
