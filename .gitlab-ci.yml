@@ -15,7 +15,7 @@ before_script:
 test:
   stage: test
   tags:
-    - al1
+    - all
   script:
     - echo "Running tests"
     - ./gradlew test
@@ -25,7 +25,7 @@ test:
 build:
   stage: build
   tags:
-    - al1
+    - all
   script:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
@@ -39,7 +39,7 @@ build:
 deploy:
   stage: deploy
   tags:
-    - al1
+    - all
   script:
     - echo "cicd script running..."
     - sh deploy.sh
