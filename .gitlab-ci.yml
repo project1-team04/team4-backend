@@ -21,7 +21,7 @@ test:
     - ./gradlew test
   only:
     - merge_requests
-git 
+
 build:
   stage: build
   tags:
