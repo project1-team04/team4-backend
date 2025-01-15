@@ -2,16 +2,20 @@ package com.elice.team04backend.service.Impl;
 
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
+import com.elice.team04backend.dto.label.LabelResponseDto;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
+import com.elice.team04backend.entity.Label;
 import com.elice.team04backend.entity.Project;
+import com.elice.team04backend.repository.LabelRepository;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -20,6 +24,7 @@ import java.util.List;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final LabelRepository labelRepository;
 
     /*
     @Preauthorize 사용하면 role이 MEMBER인 유저만 사용하게 가능 예외처리 안해도됨
@@ -47,7 +52,18 @@ public class ProjectServiceImpl implements ProjectService {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
         Project savedProject = projectRepository.save(project);
+
+        createDefaultLabels(savedProject);
+
         return savedProject.from();
+    }
+    private void createDefaultLabels(Project project) {
+        List<Label> defaultLabels = Arrays.asList(
+                new Label(null, project, "None", "기본 라벨", "#808080", project.getIssues()),
+                new Label(null, project, "Bug", "버그 라벨", "#FF0000", project.getIssues()),
+                new Label(null, project, "Enhancement", "기능 개선 라벨", "#00FF00", project.getIssues())
+        );
+        labelRepository.saveAll(defaultLabels);
     }
 
     private String generatedProjectKey(ProjectRequestDto projectRequestDto) {
@@ -61,7 +77,7 @@ public class ProjectServiceImpl implements ProjectService {
             sb.append(input);
         }
         if (sb.toString().isEmpty() || sb.toString().isBlank()) {
-            throw new IllegalStateException("임시예외");
+            throw new CustomException(ErrorCode.KEY_CREATE_FAILED);
         }
         return sb.toString();
     }

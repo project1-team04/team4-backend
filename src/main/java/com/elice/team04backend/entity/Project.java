@@ -38,8 +38,11 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project")
     private List<UserProjectRole> userProjectRoles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Label> labels = new ArrayList<>();
 
     public void update(ProjectUpdateDto projectUpdateDto) {
         this.name = projectUpdateDto.getName();
@@ -48,6 +51,10 @@ public class Project extends BaseEntity {
     public void addIssue(Issue issue) {
         this.issues.add(issue);
         this.issueCount = (long) this.issues.size();
+    }
+
+    public void addLabel(Label label) {
+        this.labels.add(label);
     }
 
     public ProjectResponseDto from() {
