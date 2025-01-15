@@ -7,9 +7,8 @@ import com.elice.team04backend.dto.label.LabelUpdateDto;
 import java.util.List;
 
 public interface LabelService {
-    LabelResponseDto postLabel(LabelRequestDto labelRequestDto);
-    List<LabelResponseDto> getAllLabels();
-
+    LabelResponseDto postLabel(Long projectId, LabelRequestDto labelRequestDto);
+    List<LabelResponseDto> getAllLabelsByProjectId(Long projectId);
     LabelResponseDto getLabelById(Long labelId);
     LabelResponseDto patchLabel(Long labelId, LabelUpdateDto labelUpdateDto);
     void deleteLabel(Long labelId);

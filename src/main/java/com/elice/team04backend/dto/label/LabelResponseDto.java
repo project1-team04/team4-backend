@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 public class LabelResponseDto {
     private Long id;
+    private Long projectId;
     private String name;
     private String description;
     private String hexCode;

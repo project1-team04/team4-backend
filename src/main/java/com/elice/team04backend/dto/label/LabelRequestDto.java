@@ -1,6 +1,7 @@
 package com.elice.team04backend.dto.label;
 
 import com.elice.team04backend.entity.Label;
+import com.elice.team04backend.entity.Project;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -22,9 +23,10 @@ public class LabelRequestDto {
     @Size(min = 7, max = 7, message = "라벨 색상은 유효한 7자리 hex 코드여야 합니다.")
     private String hexCode;
 
-    public Label from() {
+    public Label from(Project project) {
         return Label.builder()
                 .name(this.getName())
+                .project(project)
                 .description(this.getDescription())
                 .hexCode(this.getHexCode())
                 .build();
