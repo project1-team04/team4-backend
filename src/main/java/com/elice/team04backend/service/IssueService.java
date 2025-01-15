@@ -7,7 +7,7 @@ import com.elice.team04backend.dto.issue.IssueUpdateDto;
 import java.util.List;
 
 public interface IssueService {
-    IssueResponseDto postIssue(Long postId, IssueRequestDto issueRequestDto);
+    IssueResponseDto postIssue(Long projectId, IssueRequestDto issueRequestDto);
     List<IssueResponseDto> getIssueByProjectId(Long projectId);
     IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto);
     void deleteIssue(Long issueId);
