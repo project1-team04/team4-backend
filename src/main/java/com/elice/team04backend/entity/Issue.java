@@ -27,8 +27,7 @@ public class Issue extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "label_id", nullable = false)
-    @JoinColumn(name = "label_id")
+    @JoinColumn(name = "label_id", nullable = false)
     private Label label;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,9 +44,7 @@ public class Issue extends BaseEntity {
     @JoinColumn(name = "reporter_user_id")
     private User reporter;
 
-    //@Column(name = "issue_key", nullable = false)
     @Column(name = "issue_key")
-    //private Long issueKey;
     private String issueKey;
 
     @Column(name = "description", columnDefinition = "TEXT")
@@ -68,10 +65,15 @@ public class Issue extends BaseEntity {
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
     }
 
+    public void addIssueImages(IssueImage issueImage) {
+
+    }
+
     public IssueResponseDto from() {
         return IssueResponseDto.builder()
                 .id(this.id)
                 .projectId(this.getProject().getId())
+                .labelId(this.getLabel().getId())
                 //.assigneeUserId(this.getAssignee().getId())
                 //.reporterUserId(this.getReporter().getId())
                 .issueKey(this.issueKey)
