@@ -32,7 +32,7 @@ build:
     - echo "Building the application"
     - ./gradlew clean build
     - echo "Starting deployment"
-    - cp build/libs/demo-0.0.1-SNAPSHOT.jar /home/gitlab-runner/app/demo.jar
+    - cp build/libs/team04-backend-0.0.1-SNAPSHOT.jar /home/gitlab-runner/app/demo.jar
   only:
     - main
 
