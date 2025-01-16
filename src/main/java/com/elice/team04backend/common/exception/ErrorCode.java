@@ -22,6 +22,7 @@ public enum ErrorCode {
     //Issue Errors
     ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_NOT_FOUND", "이슈를 찾을 수 없습니다."),
     ISSUE_CREATE_FAILED(HttpStatus.BAD_REQUEST, "ISSUE_CREATION_FAILED", "이슈 생성에 실패했습니다."),
+    IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_UPLOAD_FAILED", "이미지 업로드에 실패했습니다."),
 
     //Label Errors
     LABEL_NOT_FOUND(HttpStatus.NOT_FOUND, "LABEL_NOT_FOUND", "라벨을 찾을 수 없습니다."),
