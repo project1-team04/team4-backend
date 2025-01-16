@@ -7,4 +7,6 @@ public interface UserService extends UserDetailsService {
 
     UserDetails loadUserByUsername(String username);
 
+public interface UserService {
+    Long signIn(User user);
 }
