@@ -9,6 +9,5 @@ public class SignUpRequestDto {
     private String email;
     private String username;
     private String password;
-    private boolean isVerified;
     private String profileImageUrl;
 }
