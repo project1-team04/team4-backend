@@ -33,7 +33,7 @@
 <script>
     // 이슈 ID 설정 (예시로 101을 사용, 이슈 진입할때 따로 저장후에 기입)
     const issueId = 101;
-    const socket = new WebSocket(`ws://localhost:8080/chat/${issueId}`);
+    const socket = new WebSocket(`ws://localhost:8081/chat/${issueId}`);
 
     // 서버에서 메시지가 도착하면 처리하는 부분
     socket.onmessage = function(event) {
