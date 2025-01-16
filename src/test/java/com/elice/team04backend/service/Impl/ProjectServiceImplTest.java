@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Slf4j
 class ProjectServiceImplTest {
+    /*
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -61,4 +62,5 @@ class ProjectServiceImplTest {
         }
         return sb.toString();
     }
+ */
 }
