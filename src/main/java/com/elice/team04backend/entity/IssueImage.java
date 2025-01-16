@@ -1,15 +1,15 @@
 package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.entity.BaseEntity;
+import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.envers.AuditOverride;
+
 
 @Entity
 @Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,15 +24,14 @@ public class IssueImage extends BaseEntity {
     @JoinColumn(name = "issue_id", nullable = false)
     private Issue issue;
 
-    @Column(name = "original_name", nullable = false)
-    private String originalName;
-
-    @Column(name = "saved_name", nullable = false)
-    private String savedName;
-
-    @Column(name = "image_path", nullable = false)
-    private String imagePath;
-
-    @Column(name = "image_url", nullable = false)
+    @Column(name = "image_url")
     private String imageUrl;
+
+    IssueImageResponseDto from() {
+        return IssueImageResponseDto.builder()
+                .id(this.getId())
+                .imageUrl(this.getImageUrl())
+                .build();
+    }
+
 }
