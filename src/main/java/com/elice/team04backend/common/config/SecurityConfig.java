@@ -27,14 +27,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AuthenticationManager authenticationManager;
-
-    private final JwtLoginAuthenticationFilter jwtLoginAuthenticationFilter;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final ProjectRoleAuthorizationFilter projectRoleAuthorizationFilter;
-
     private final JwtTokenProvider jwtTokenProvider;
     private final UserProjectRoleService userProjectRoleService;
+    private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -46,14 +41,20 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/login").permitAll()
-                            .requestMatchers("/api/auth/signup").permitAll()
+                        auth.requestMatchers("/api/auth/**").permitAll()
+                            .requestMatchers("/swagger-ui/**").permitAll()
+                            .requestMatchers("/api-docs/**").permitAll()
                             .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtLoginAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(projectRoleAuthorizationFilter, JwtAuthenticationFilter.class);
+                .addFilterBefore(jwtLoginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(projectRoleAuthorizationFilter(), JwtAuthenticationFilter.class);
         return httpSecurity.build();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(){
+        return new JwtAuthenticationFilter(jwtTokenProvider);
     }
 
     @Bean
@@ -62,8 +63,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtLoginAuthenticationFilter jwtLoginAuthenticationFilter() {
-        return new JwtLoginAuthenticationFilter(authenticationManager, jwtTokenProvider);
+    public JwtLoginAuthenticationFilter jwtLoginAuthenticationFilter() throws Exception {
+        JwtLoginAuthenticationFilter filter = new JwtLoginAuthenticationFilter(jwtTokenProvider);
+        filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
+        return filter;
     }
 
     @Bean

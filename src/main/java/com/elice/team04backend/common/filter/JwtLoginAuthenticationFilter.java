@@ -9,7 +9,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -25,14 +24,14 @@ public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthentication
 
     private final JwtTokenProvider jwtTokenProvider;
 
-    public JwtLoginAuthenticationFilter(AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider) {
-        super.setAuthenticationManager(authenticationManager);
+    public JwtLoginAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
         setFilterProcessesUrl("/api/auth/login"); // 로그인 경로 설정
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+        log.info("JwtLoginAuthenticationFilter 필터 - attemptAuthentication");
         try {
             // 클라이언트에서 전송한 사용자 정보를 객체로 변환
             SignInRequestDto signInRequestDto = new ObjectMapper().readValue(request.getInputStream(), SignInRequestDto.class);
@@ -55,6 +54,7 @@ public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthentication
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authResult) throws IOException {
+        log.info("JwtLoginAuthenticationFilter 필터 - successfulAuthentication");
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authResult.getPrincipal();
 
