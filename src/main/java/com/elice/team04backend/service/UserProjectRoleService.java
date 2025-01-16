@@ -1,5 +1,7 @@
 package com.elice.team04backend.service;
 
+import com.elice.team04backend.entity.UserProjectRole;
+
 public interface UserProjectRoleService {
-    String getUserRoleForProject(Long userId, String projectId);
+    UserProjectRole getUserRoleForProject(Long userId, Long projectId);
 }
