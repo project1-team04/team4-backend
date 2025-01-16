@@ -1,9 +1,7 @@
-package com.elice.team04backend.service.Impl;
+package com.elice.team04backend.service.impl;
 
-import com.elice.team04backend.common.constant.UserStatus;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
-import com.elice.team04backend.entity.User;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.ProjectService;

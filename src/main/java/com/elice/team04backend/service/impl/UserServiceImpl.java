@@ -1,6 +1,5 @@
-package com.elice.team04backend.service.Impl;
+package com.elice.team04backend.service.impl;
 
-import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.UserService;
