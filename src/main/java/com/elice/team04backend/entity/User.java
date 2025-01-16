@@ -26,7 +26,13 @@ public class User extends BaseEntity{
     private String email;
 
     @Column(name = "username", nullable = false, length = 255)
+    private String username;
+
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
+
+    @Column(name = "refresh_token", nullable = false, length = 255)
+    private String refreshToken;
 
     @Column(name = "profile_image")
     private String profileImage;
