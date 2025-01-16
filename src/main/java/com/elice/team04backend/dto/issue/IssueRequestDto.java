@@ -1,13 +1,12 @@
 package com.elice.team04backend.dto.issue;
 
 import com.elice.team04backend.common.constant.IssueStatus;
-import com.elice.team04backend.entity.Issue;
-import com.elice.team04backend.entity.Label;
-import com.elice.team04backend.entity.Project;
-import com.elice.team04backend.entity.User;
+import com.elice.team04backend.entity.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,6 +39,8 @@ public class IssueRequestDto {
     @NotNull(message = "이슈 상태는 필수입니다.") // enum 타입 에는 blank 사용하면 에러발생
     private IssueStatus status;
 
+    private List<IssueImage> issueImages;
+
 //    public Issue from(Project project, User assignee, User reporter, String issueKey) {
 //        return Issue.builder()
 //                .project(project)
@@ -53,13 +54,22 @@ public class IssueRequestDto {
 //    }
 
     public Issue from(Project project, Label label, String generatedIssueKey) {
-        return Issue.builder()
+        Issue issue = Issue.builder()
                 .project(project)
                 .label(label)
                 .issueKey(generatedIssueKey)
-                .description(description)
-                .troubleShooting(troubleShooting)
-                .status(status)
+                .description(this.getDescription())
+                .troubleShooting(this.getTroubleShooting())
+                .status(this.getStatus())
                 .build();
+        if (this.issueImages != null) {
+            this.issueImages.forEach(url -> {
+                IssueImage image = new IssueImage();
+                image.setImageUrl(String.valueOf(url));
+                image.setIssue(issue);
+                issue.addIssueImages(image);
+            });
+        }
+        return issue;
     }
 }

@@ -4,6 +4,7 @@ import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.common.entity.BaseEntity;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
+import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +14,7 @@ import org.hibernate.envers.AuditOverride;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -66,7 +68,11 @@ public class Issue extends BaseEntity {
     }
 
     public void addIssueImages(IssueImage issueImage) {
-
+        if (this.getIssueImages() == null) {
+            this.issueImages = new ArrayList<>();
+        }
+        issueImage.setIssue(this);
+        this.getIssueImages().add(issueImage);
     }
 
     public IssueResponseDto from() {
@@ -76,10 +82,13 @@ public class Issue extends BaseEntity {
                 .labelId(this.getLabel().getId())
                 //.assigneeUserId(this.getAssignee().getId())
                 //.reporterUserId(this.getReporter().getId())
-                .issueKey(this.issueKey)
-                .description(this.description)
-                .troubleShooting(this.troubleShooting)
-                .status(this.status)
+                .issueKey(this.getIssueKey())
+                .description(this.getDescription())
+                .troubleShooting(this.getTroubleShooting())
+                .status(this.getStatus())
+                .issueImages(this.issueImages.stream()
+                        .map(IssueImage::from)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
