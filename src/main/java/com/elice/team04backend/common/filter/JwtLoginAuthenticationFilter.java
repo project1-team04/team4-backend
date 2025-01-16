@@ -3,6 +3,7 @@ package com.elice.team04backend.common.filter;
 import com.elice.team04backend.common.dto.request.SignInRequestDto;
 import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
+import com.elice.team04backend.common.utils.RefreshTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
@@ -23,9 +24,11 @@ import java.io.IOException;
 public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenProvider refreshTokenProvider;
 
-    public JwtLoginAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+    public JwtLoginAuthenticationFilter(JwtTokenProvider jwtTokenProvider, RefreshTokenProvider refreshTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
+        this.refreshTokenProvider = refreshTokenProvider;
         setFilterProcessesUrl("/api/auth/login"); // 로그인 경로 설정
     }
 
@@ -60,9 +63,7 @@ public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthentication
 
         // 토큰 발급
         String accessToken = jwtTokenProvider.generateAccessToken(userDetails.getUsername(), userDetails.getUserId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails.getUsername(), userDetails.getUserId());
-
-        // TODO: Logout 구현을 위해 accessToken은 Redis에, refreshToken는 DB 저장하는 로직이 필요하다.
+        String refreshToken = refreshTokenProvider.createAndStoreRefreshToken(userDetails.getUserId());
 
         // 리프레시 토큰을 쿠키로 설정
         setRefreshTokenCookie(response, refreshToken);
@@ -74,7 +75,7 @@ public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthentication
     }
 
     private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        int cookieMaxAge = (int) (jwtTokenProvider.getRefreshTokenExpiration() / 1000); // 초 단위로 변환
+        int cookieMaxAge = (int) (refreshTokenProvider.getRefreshTokenExpiration() * 60 * 60); // 초 단위로 변환
 
         // 쿠키 생성
         Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);

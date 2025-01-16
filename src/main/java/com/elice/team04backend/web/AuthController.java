@@ -1,15 +1,21 @@
 package com.elice.team04backend.web;
 
 import com.elice.team04backend.common.dto.request.SignUpRequestDto;
-import com.elice.team04backend.dto.ConfirmEmailRequestDto;
-import com.elice.team04backend.dto.VerifyEmailRequestDto;
+import com.elice.team04backend.common.model.UserDetailsImpl;
+import com.elice.team04backend.common.dto.response.AccessTokenResponseDto;
+import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
+import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
 import com.elice.team04backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -42,10 +48,39 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "RefreshToken을 통한 AccessToken 발급 요청", description = "RefreshToken을 통한 AccessToken 발급 요청합니다.")
+    @GetMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
+
+        // Cookie에서 RefreshToken 추출
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String refreshToken = null;
+        for (Cookie cookie : cookies) {
+            if ("refreshToken".equals(cookie.getName())) {
+                refreshToken = cookie.getValue();
+                break;
+            }
+        }
+
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        // Access Token 발급
+        String newAccessToken = authService.refreshAccessToken(refreshToken);
+
+        return ResponseEntity.ok(new AccessTokenResponseDto(newAccessToken));
+    }
+
     @Operation(summary = "로그아웃", description = "refreshToken을 제거하고, accessToken을 블랙리스트로 관리합니다.")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        authService.logout();
-        return null;
+    public ResponseEntity<?> logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request, HttpServletResponse response) {
+        authService.logout(userDetails.getUserId(), request, response);
+        return ResponseEntity.ok().build();
     }
 }

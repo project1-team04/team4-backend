@@ -1,14 +1,17 @@
 package com.elice.team04backend.common.utils;
 
-import com.elice.team04backend.common.config.property.JwtProperty;
+import com.elice.team04backend.common.config.property.TokenProperty;
+import com.elice.team04backend.common.model.RedisDAO;
 import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.bind.DatatypeConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -20,23 +23,21 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private final JwtProperty jwtProperty;
+    private final TokenProperty tokenProperty;
     private final Key secretKey;
+    private final RedisDAO redisDAO;
 
-    public JwtTokenProvider(JwtProperty jwtProperty) {
-        this.jwtProperty = jwtProperty;
-        byte[] secretByteKey = DatatypeConverter.parseBase64Binary(jwtProperty.getSecret());
+    public JwtTokenProvider(TokenProperty tokenProperty, RedisDAO redisDAO) {
+        this.tokenProperty = tokenProperty;
+        byte[] secretByteKey = DatatypeConverter.parseBase64Binary(tokenProperty.getSecret());
         this.secretKey = Keys.hmacShaKeyFor(secretByteKey);
+        this.redisDAO = redisDAO;
     }
 
     // Token 생성
 
     public String generateAccessToken(String email, Long userId) {
-        return generateToken(email, userId, jwtProperty.getAccessTokenExpiration());
-    }
-
-    public String generateRefreshToken(String email, Long userId) {
-        return generateToken(email, userId, jwtProperty.getRefreshTokenExpiration());
+        return generateToken(email, userId, tokenProperty.getAccessTokenExpiration());
     }
 
     private String generateToken(String email, Long userId, long expirationTime) {
@@ -50,11 +51,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    // Token 정보 읽기 & 인증
-
-    public Long getRefreshTokenExpiration() {
-        return jwtProperty.getRefreshTokenExpiration();
-    }
 
     // Token으로부터 인증 생성
 
@@ -73,18 +69,27 @@ public class JwtTokenProvider {
                 .email(email)
                 .build();
 
-        return new UsernamePasswordAuthenticationToken(new UserDetailsImpl(user), null);
+        UserDetailsImpl userDetails = new UserDetailsImpl(user);
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 
     // Token 검증
 
     public boolean validateToken(String token) {
+
+        if (!ObjectUtils.isEmpty(redisDAO.getValues(token))) {
+            log.info("사용했던 accessToken입니다.");
+            return false;
+        }
+
         try {
             // 서명 검증 및 토큰 파싱
             Jwts.parserBuilder()
                     .setSigningKey(secretKey) // SecretKey로 서명 검증
                     .build()
                     .parseClaimsJws(token); // 유효하지 않으면 예외 발생
+            log.info("검증 성공 token : {}", token);
             return true; // 검증 성공
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
             log.info("토큰이 만료되었습니다.");
@@ -96,5 +101,20 @@ public class JwtTokenProvider {
             log.info("토큰 검증 중 알 수 없는 오류 발생: " + e.getMessage());
         }
         return false; // 검증 실패
+    }
+
+    // AccessToken 만료시간 확인
+
+    public Long getAccessTokenExpiration() {
+        return tokenProperty.getAccessTokenExpiration();
+    }
+
+    // AccessToken 추출
+
+    public String resolveAccessToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        return (bearerToken != null && bearerToken.startsWith("Bearer "))
+                ? bearerToken.substring(7)
+                : null;
     }
 }

@@ -24,7 +24,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/verify-email",
-            "/api/auth/verify"
+            "/api/auth/verify",
+            "/api/auth/refresh-token"
     );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -42,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         log.info("JwtAuthenticationFilter 필터 검증");
 
-        String token = resolveAccessToken(request);
+        String token = jwtTokenProvider.resolveAccessToken(request);
 
         if (token == null) {
             log.info("액세스 토큰이 필요합니다.");
@@ -56,12 +57,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private String resolveAccessToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        return (bearerToken != null && bearerToken.startsWith("Bearer "))
-                ? bearerToken.substring(7)
-                : null;
     }
 }

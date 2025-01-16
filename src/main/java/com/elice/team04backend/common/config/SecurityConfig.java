@@ -4,6 +4,7 @@ import com.elice.team04backend.common.filter.JwtAuthenticationFilter;
 import com.elice.team04backend.common.filter.JwtLoginAuthenticationFilter;
 import com.elice.team04backend.common.filter.ProjectRoleAuthorizationFilter;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
+import com.elice.team04backend.common.utils.RefreshTokenProvider;
 import com.elice.team04backend.service.UserProjectRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final RefreshTokenProvider refreshTokenProvider;
     private final UserProjectRoleService userProjectRoleService;
     private final AuthenticationConfiguration authenticationConfiguration;
 
@@ -41,7 +43,11 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").permitAll()
+                        auth.requestMatchers("/api/auth/verify-email").permitAll()
+                            .requestMatchers("/api/auth/verify").permitAll()
+                            .requestMatchers("/api/auth/signup").permitAll()
+                            .requestMatchers("/api/auth/login").permitAll()
+                            .requestMatchers("/api/auth/refresh-token").permitAll()
                             .requestMatchers("/swagger-ui/**").permitAll()
                             .requestMatchers("/api-docs/**").permitAll()
                             .anyRequest().authenticated()
@@ -64,7 +70,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtLoginAuthenticationFilter jwtLoginAuthenticationFilter() throws Exception {
-        JwtLoginAuthenticationFilter filter = new JwtLoginAuthenticationFilter(jwtTokenProvider);
+        JwtLoginAuthenticationFilter filter = new JwtLoginAuthenticationFilter(jwtTokenProvider, refreshTokenProvider);
         filter.setAuthenticationManager(authenticationManager(authenticationConfiguration));
         return filter;
     }
