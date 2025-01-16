@@ -35,7 +35,7 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "refresh_token", nullable = false, length = 255)
+    @Column(name = "refresh_token", length = 255)
     private String refreshToken;
 
     @Column(name = "profile_image")
@@ -60,6 +60,4 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "reporter")
     private List<Issue> reporterIssues = new ArrayList<>();
-
-
 }
