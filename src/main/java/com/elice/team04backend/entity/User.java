@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +36,6 @@ public class User extends BaseEntity {
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "refresh_token", length = 255)
-    private String refreshToken;
-
     @Column(name = "profile_image")
     private String profileImage;
 
@@ -55,9 +53,25 @@ public class User extends BaseEntity {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "expiration_at")
+    private LocalDateTime expirationAt;
+
+    @Column(name = "refreshToken")
+    private String refreshToken;
+
     @OneToMany(mappedBy = "assignee")
     private List<Issue> assigneeIssues = new ArrayList<>();
 
     @OneToMany(mappedBy = "reporter")
     private List<Issue> reporterIssues = new ArrayList<>();
+
+    public void registerRefreshToken(String refreshToken, LocalDateTime expirationAt){
+        this.refreshToken = refreshToken;
+        this.expirationAt = expirationAt;
+    }
+
+    public void removeRefreshToken(){
+        this.refreshToken = null;
+        this.expirationAt = null;
+    }
 }
