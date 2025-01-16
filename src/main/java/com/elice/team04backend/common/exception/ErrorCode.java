@@ -10,7 +10,7 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버에서 오류가 발생했습니다."),
 
-    KEY_CREATE_FAILED(HttpStatus.BAD_REQUEST, "KEY_CREATE_FAILED", "키 생성에 실패했습니다."),
+    KEY_CREATE_FAILED(HttpStatus.BAD_REQUEST, "KEY_CREATE_FAILED", "키 생성에 실패했습니다. 다른 프로젝트 명을 사용해주세요"),
 
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "유저를 찾을 수 없습니다."),
     USER_CREATE_FAILED(HttpStatus.BAD_REQUEST, "USER_CREATE_FAILED", "유저 생성에 실패했습니다."),
@@ -26,7 +26,7 @@ public enum ErrorCode {
     //Label Errors
     LABEL_NOT_FOUND(HttpStatus.NOT_FOUND, "LABEL_NOT_FOUND", "라벨을 찾을 수 없습니다."),
     LABEL_CREATE_FAILED(HttpStatus.BAD_REQUEST, "LABEL_CREATE_FAILED", "라벨 생성에 실패했습니다.");
-    ;
+
 
     private final HttpStatus httpStatus;
     private final String codeName;

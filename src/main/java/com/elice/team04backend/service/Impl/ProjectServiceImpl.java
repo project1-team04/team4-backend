@@ -2,7 +2,6 @@ package com.elice.team04backend.service.Impl;
 
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
-import com.elice.team04backend.dto.label.LabelResponseDto;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
@@ -68,18 +67,32 @@ public class ProjectServiceImpl implements ProjectService {
 
     private String generatedProjectKey(ProjectRequestDto projectRequestDto) {
         StringBuilder sb = new StringBuilder();
-        String[] s = projectRequestDto.getName().toUpperCase().split(" ");
-        for (String value : s) {
-            char input = value.charAt(0);
-            if ('0' <= input && input <= '9' || input == ' ') {
-                continue;
+        String[] words = projectRequestDto.getName().toUpperCase().split(" ");
+
+        for (String word : words) {
+            char firstChar = word.charAt(0);
+            if (Character.isLetter(firstChar)) {
+                sb.append(firstChar);
             }
-            sb.append(input);
         }
-        if (sb.toString().isEmpty() || sb.toString().isBlank()) {
+
+        if (sb.isEmpty()) {
             throw new CustomException(ErrorCode.KEY_CREATE_FAILED);
         }
-        return sb.toString();
+
+        String baseKey = sb.toString();
+        String projectKey = baseKey;
+        int attempt = 1;
+
+        while (projectRepository.existsByProjectKey(projectKey)) {
+            char randomChar = (char) ('A' + (int) (Math.random() * 26));
+            projectKey = baseKey + randomChar;
+            if (attempt++ > 10) {
+                throw new CustomException(ErrorCode.KEY_CREATE_FAILED);
+            }
+        }
+
+        return projectKey;
     }
 
     @Override
