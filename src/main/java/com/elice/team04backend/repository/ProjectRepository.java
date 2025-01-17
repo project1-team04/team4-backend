@@ -20,5 +20,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "WHERE upr.user.id = :userId")
     Page<Project> findByUserId(@Param("userId") Long userId, Pageable pageable);
     boolean existsByProjectKey(String projectKey);
-
+    void deleteById(Long projectId);
 }

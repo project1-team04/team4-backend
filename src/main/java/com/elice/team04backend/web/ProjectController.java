@@ -50,6 +50,14 @@ public class ProjectController {
         return ResponseEntity.ok(projectResponseDtos);
     }
 
+    @PostMapping
+    public ResponseEntity<ProjectResponseDto> postProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody ProjectRequestDto projectRequestDto) {
+        ProjectResponseDto projectResponseDto = projectService.postProject(userDetails.getUserId(), projectRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
+    }
+
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/{projectId}")
     public ResponseEntity<ProjectResponseDto> getProject(
@@ -59,32 +67,32 @@ public class ProjectController {
         return ResponseEntity.ok(projectResponseDto);
     }
 
+    @PreAuthorize("hasRole('MANAGER')")
+    @PatchMapping
+    //@PatchMapping("/{projectId}")
+    public ResponseEntity<ProjectResponseDto> patchProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId,
+            @Valid @RequestBody ProjectUpdateDto projectUpdateDto) {
+        ProjectResponseDto projectResponseDto = projectService.patchProject(userDetails.getUserId(), projectId, projectUpdateDto);
+        return ResponseEntity.ok(projectResponseDto);
+    }
 
-//    @GetMapping
+    @PreAuthorize("hasRole('MANAGER')")
+    @DeleteMapping
+    public ResponseEntity<Void> deleteProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId) {
+        projectService.deleteProject(userDetails.getUserId(), projectId);
+        return ResponseEntity.noContent().build();
+    }
+
+
+    //    @GetMapping
 //    public ResponseEntity<List<ProjectResponseDto>> getAllProjects() {
 //        List<ProjectResponseDto> projectResponseDtos = projectService.getAllProjects();
 //        return ResponseEntity.ok(projectResponseDtos);
 //    }
-
-    @PostMapping
-    public ResponseEntity<ProjectResponseDto> postProject(@Valid @RequestBody ProjectRequestDto projectRequestDto) {
-        ProjectResponseDto projectResponseDto = projectService.postProject(projectRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
-    }
-
-    @PatchMapping("/{projectId}")
-    public ResponseEntity<ProjectResponseDto> patchProject(
-            @PathVariable Long projectId,
-            @Valid @RequestBody ProjectUpdateDto projectUpdateDto) {
-        ProjectResponseDto projectResponseDto = projectService.patchProject(projectId, projectUpdateDto);
-        return ResponseEntity.ok(projectResponseDto);
-    }
-
-    @DeleteMapping("/{projectId}")
-    public ResponseEntity<Void> deleteProject(@PathVariable Long projectId) {
-        projectService.deleteProject(projectId);
-        return ResponseEntity.noContent().build();
-    }
 
 
     //라벨 관련 컨트롤러

@@ -13,6 +13,7 @@ public enum ErrorCode {
     KEY_CREATE_FAILED(HttpStatus.BAD_REQUEST, "KEY_CREATE_FAILED", "키 생성에 실패했습니다. 다른 프로젝트 명을 사용해주세요"),
     IMAGE_DELETE_FAILED(HttpStatus.BAD_REQUEST, "IMAGE_DELETE_FAILED", "이미지 삭제에 실패했습니다."),
 
+    //User Errors
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "유저를 찾을 수 없습니다."),
     USER_CREATE_FAILED(HttpStatus.BAD_REQUEST, "USER_CREATE_FAILED", "유저 생성에 실패했습니다."),
 
@@ -27,7 +28,11 @@ public enum ErrorCode {
 
     //Label Errors
     LABEL_NOT_FOUND(HttpStatus.NOT_FOUND, "LABEL_NOT_FOUND", "라벨을 찾을 수 없습니다."),
-    LABEL_CREATE_FAILED(HttpStatus.BAD_REQUEST, "LABEL_CREATE_FAILED", "라벨 생성에 실패했습니다.");
+    LABEL_CREATE_FAILED(HttpStatus.BAD_REQUEST, "LABEL_CREATE_FAILED", "라벨 생성에 실패했습니다."),
+
+    // Role/Permission Errors
+    PERMISSION_DENIED(HttpStatus.FORBIDDEN, "PERMISSION_DENIED", "권한이 없습니다."),
+    ROLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ROLE_ACCESS_DENIED", "해당 작업을 수행할 권한이 없습니다.");
 
 
     private final HttpStatus httpStatus;
