@@ -1,4 +1,4 @@
-package com.elice.team04backend.service.Impl;
+package com.elice.team04backend.service.impl;
 
 import com.elice.team04backend.dto.Project.ProjectRequestDto;
 import com.elice.team04backend.dto.Project.ProjectResponseDto;
