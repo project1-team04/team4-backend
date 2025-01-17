@@ -27,10 +27,14 @@ public class IssueImage extends BaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "original_name")
+    private String originalName;
+
     IssueImageResponseDto from() {
         return IssueImageResponseDto.builder()
                 .id(this.getId())
                 .imageUrl(this.getImageUrl())
+                .originalName(this.getOriginalName())
                 .build();
     }
 

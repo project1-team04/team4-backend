@@ -10,4 +10,6 @@ import lombok.*;
 public class IssueImageResponseDto {
     private Long id;
     private String imageUrl;
+    private String originalName;
+
 }

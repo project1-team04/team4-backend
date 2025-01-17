@@ -72,9 +72,11 @@ public class IssueServiceImpl implements IssueService {
             for (MultipartFile file : files) {
                 try {
                     String imageUrl = firebaseStorageService.uploadImage(file);
+                    String originalName = file.getOriginalFilename();
                     IssueImage issueImage = IssueImage.builder()
                             .issue(issue)
                             .imageUrl(imageUrl)
+                            .originalName(originalName)
                             .build();
                     issue.addIssueImages(issueImage);
                 } catch (IOException e) {
