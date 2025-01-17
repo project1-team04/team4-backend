@@ -95,6 +95,14 @@ public class IssueServiceImpl implements IssueService {
 
     @Override
     @Transactional(readOnly = true)
+    public IssueResponseDto getIssueById(Long issueId) {
+        Issue findedIssue = issueRepository.findById(issueId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
+        return findedIssue.from();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<IssueResponseDto> getIssueByProjectId(Long projectId) {
         return issueRepository.findByProjectId(projectId)
                 .stream()

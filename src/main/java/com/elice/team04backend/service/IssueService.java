@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface IssueService {
     IssueResponseDto postIssue(Long projectId, IssueRequestDto issueRequestDto, List<MultipartFile> files);
+    IssueResponseDto getIssueById(Long issueId);
     List<IssueResponseDto> getIssueByProjectId(Long projectId);
     IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto);
     void deleteIssue(Long issueId);
