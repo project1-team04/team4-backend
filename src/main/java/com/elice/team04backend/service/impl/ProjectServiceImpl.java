@@ -36,23 +36,6 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
 
-    /*
-        Project project = Project.builder()
-                .projectKey("h")
-                .name("hell")
-                .issueCount(0L)
-                .build();
-
-        UserProjectRole userProjectRole = UserProjectRole.builder()
-                .user(user)
-                .project(project)
-                .role(Role.MANAGER)
-                .build();
-
-        projectRepository.save(project);
-        userProjectRoleRepository.save(userProjectRole);
-     */
-
     @Transactional(readOnly = true)
     @Override
     public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
@@ -151,18 +134,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (userProjectRole.getRole() != Role.MANAGER) {
             throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
-
         projectRepository.deleteById(projectId);
     }
 
-    //----------------------------------------------------------------------------
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<ProjectResponseDto> getAllProjects() {
-        return projectRepository.findAll()
-                .stream()
-                .map(Project::from)
-                .toList();
-    }
 }
