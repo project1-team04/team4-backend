@@ -4,7 +4,7 @@ stages:
   - deploy
 
 variables:
-  APP_CONFIG_PATH: ./build/config/application-dev.yml
+  APP_CONFIG_PATH: src/main/resources/application-dev.yml
 
 cache:
   paths:
