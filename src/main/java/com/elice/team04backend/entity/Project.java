@@ -35,7 +35,7 @@ public class Project extends BaseEntity {
     @Column(name = "issue_count", nullable = false)
     private Long issueCount;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProjectRole> userProjectRoles = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)

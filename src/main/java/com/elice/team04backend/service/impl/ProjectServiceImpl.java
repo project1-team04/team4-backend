@@ -12,6 +12,7 @@ import com.elice.team04backend.entity.User;
 import com.elice.team04backend.entity.UserProjectRole;
 import com.elice.team04backend.repository.LabelRepository;
 import com.elice.team04backend.repository.ProjectRepository;
+import com.elice.team04backend.repository.UserProjectRoleRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.ProjectService;
 import com.elice.team04backend.service.UserProjectRoleService;
@@ -32,7 +33,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final LabelRepository labelRepository;
-    private final UserProjectRoleService userProjectRoleService;
+    private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
 
     /*
@@ -71,11 +72,17 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto postProject(ProjectRequestDto projectRequestDto) {
+    public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
         Project savedProject = projectRepository.save(project);
 
+        UserProjectRole userProjectRole = UserProjectRole.builder()
+                        .user(User.builder().id(userId).build())
+                        .project(savedProject)
+                        .role(Role.MANAGER)
+                        .build();
+        userProjectRoleRepository.save(userProjectRole);
         createDefaultLabels(savedProject);
 
         return savedProject.from();
@@ -120,19 +127,32 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto patchProject(Long projectId, ProjectUpdateDto projectUpdateDto) {
+    public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
+        UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (userProjectRole.getRole() != Role.MANAGER) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+
         project.update(projectUpdateDto);
         Project updatedProject = projectRepository.save(project);
         return updatedProject.from();
     }
 
     @Override
-    public void deleteProject(Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
-        projectRepository.delete(project);
+    public void deleteProject(Long userId, Long projectId) {
+        UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (userProjectRole.getRole() != Role.MANAGER) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+
+        projectRepository.deleteById(projectId);
     }
 
     //----------------------------------------------------------------------------
