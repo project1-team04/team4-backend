@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -25,7 +26,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/signup",
             "/api/auth/verify-email",
             "/api/auth/verify",
-            "/api/auth/refresh-token"
+            "/api/auth/refresh-token",
+            "/swagger-ui.html"
     );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -35,7 +37,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-        return NO_AUTH_PATHS.contains(path);
+
+        // AntPathMatcher를 사용하여 패턴 매칭 처리
+        AntPathMatcher pathMatcher = new AntPathMatcher();
+        return NO_AUTH_PATHS.stream().anyMatch(authPath -> pathMatcher.match(authPath, path)) ||
+                pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/api-docs/**", path);
     }
 
     @Override

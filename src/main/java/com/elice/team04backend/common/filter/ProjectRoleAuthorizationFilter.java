@@ -46,9 +46,10 @@ public class ProjectRoleAuthorizationFilter extends OncePerRequestFilter {
         log.info("ProjectRoleAuthorizationFilter doFilterInternal");
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Long projectId = Long.valueOf(request.getParameter("projectId")); // GET /api/project?projectId=12345 이렇게 적힌 경우, 12345를 가져옴.
+        String rawProjectId = request.getParameter("projectId"); // GET /api/project?projectId=12345 이렇게 적힌 경우, 12345를 가져옴.
 
-        if (authentication != null && projectId != null) {
+        if (authentication != null && rawProjectId != null) {
+            Long projectId = Long.valueOf(rawProjectId);
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             Long userId = userDetails.getUserId();
 
