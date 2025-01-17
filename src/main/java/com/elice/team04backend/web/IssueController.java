@@ -3,7 +3,6 @@ package com.elice.team04backend.web;
 import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
-import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.service.FirebaseStorageService;
 import com.elice.team04backend.service.IssueService;
 import jakarta.validation.Valid;
@@ -37,6 +36,12 @@ public class IssueController {
     public ResponseEntity<List<IssueResponseDto>> getIssuesByProject(@PathVariable Long projectId) {
         List<IssueResponseDto> issueResponseDtos = issueService.getIssueByProjectId(projectId);
         return ResponseEntity.ok(issueResponseDtos);
+    }
+
+    @GetMapping("/{issueId}")
+    public ResponseEntity<IssueResponseDto> getIssueById(@PathVariable Long issueId) {
+        IssueResponseDto issueResponseDto = issueService.getIssueById(issueId);
+        return ResponseEntity.ok(issueResponseDto);
     }
 
     @PatchMapping("/{issueId}")
