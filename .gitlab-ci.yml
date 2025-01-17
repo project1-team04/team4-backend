@@ -33,7 +33,7 @@ build:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
     - cp /home/kdt/application-dev.yml /home/gitlab-runner/builds/mhH7LCxy/0/pttrack/class_01/web_project_i/team04/team04-backend/src/main/resources/application-dev.yml
-    - ls -l $(dirname $APP_CONFIG_PATH)
+    - ls -l /home/gitlab-runner/builds/mhH7LCxy/0/pttrack/class_01/web_project_i/team04/team04-backend/src/main/resources/
     - echo "Building the application"
     - ./gradlew clean build
     - echo "Starting deployment"
