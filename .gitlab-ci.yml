@@ -32,8 +32,7 @@ build:
   script:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
-    - mkdir -p $(dirname $APP_CONFIG_PATH)
-    - echo "$APPLICATION_DEV_YML" > $APP_CONFIG_PATH
+    - cp /home/kdt/application-dev.yml src/main/resources/application-dev.yml
     - ls -l $(dirname $APP_CONFIG_PATH)
     - echo "Building the application"
     - ./gradlew clean build
