@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.envers.AuditOverride;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,28 +20,20 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @AuditOverride(forClass = BaseEntity.class)
-//@Table(name = "member") // h2 database에 user 예약어가 있어서 잠시 설정
 public class User extends BaseEntity {
-
-//    public User(String email, String username, String password, UserStatus status) {
-//        this.email = email;
-//        this.username = username;
-//        this.password = password;
-//        this.status = status;
-//    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
     private Long id;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, length = 255)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "profile_image")
@@ -60,12 +53,25 @@ public class User extends BaseEntity {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "expiration_at")
+    private LocalDateTime expirationAt;
+
+    @Column(name = "refreshToken")
+    private String refreshToken;
+
     @OneToMany(mappedBy = "assignee")
     private List<Issue> assigneeIssues = new ArrayList<>();
 
     @OneToMany(mappedBy = "reporter")
     private List<Issue> reporterIssues = new ArrayList<>();
 
+    public void registerRefreshToken(String refreshToken, LocalDateTime expirationAt){
+        this.refreshToken = refreshToken;
+        this.expirationAt = expirationAt;
+    }
 
+    public void removeRefreshToken(){
+        this.refreshToken = null;
+        this.expirationAt = null;
+    }
 }
-

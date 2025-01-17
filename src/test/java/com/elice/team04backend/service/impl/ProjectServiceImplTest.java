@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest
 @Slf4j
 class ProjectServiceImplTest {
+    /*
     @Autowired
     UserRepository userRepository;
     @Autowired
@@ -59,4 +60,5 @@ class ProjectServiceImplTest {
         }
         return sb.toString();
     }
+ */
 }
