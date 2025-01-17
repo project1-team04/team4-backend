@@ -32,7 +32,7 @@ public class IssueImage extends BaseEntity {
 
     IssueImageResponseDto from() {
         return IssueImageResponseDto.builder()
-                .id(this.getId())
+                .id(String.valueOf(this.getId()))
                 .imageUrl(this.getImageUrl())
                 .originalName(this.getOriginalName())
                 .build();

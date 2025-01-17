@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IssueResponseDto {
-    private Long id;
+    private String id;
     private Long projectId;
     private Long labelId;
     //private Long assigneeUserId;

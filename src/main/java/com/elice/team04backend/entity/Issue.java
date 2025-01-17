@@ -77,7 +77,7 @@ public class Issue extends BaseEntity {
 
     public IssueResponseDto from() {
         return IssueResponseDto.builder()
-                .id(this.id)
+                .id(String.valueOf(this.id))
                 .projectId(this.getProject().getId())
                 .labelId(this.getLabel().getId())
                 //.assigneeUserId(this.getAssignee().getId())

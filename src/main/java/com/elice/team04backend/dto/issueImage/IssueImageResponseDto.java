@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IssueImageResponseDto {
-    private Long id;
+    private String id;
     private String imageUrl;
     private String originalName;
 

@@ -59,7 +59,7 @@ public class Project extends BaseEntity {
 
     public ProjectResponseDto from() {
         return ProjectResponseDto.builder()
-                .id(this.getId())
+                .id(String.valueOf(this.getId()))
                 .projectKey(this.getProjectKey())
                 .issueCount(this.getIssueCount())
                 .name(this.getName())
