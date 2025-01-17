@@ -1,5 +1,6 @@
 package com.elice.team04backend.web;
 
+import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.dto.label.LabelRequestDto;
 import com.elice.team04backend.dto.label.LabelResponseDto;
 import com.elice.team04backend.dto.label.LabelUpdateDto;
@@ -10,13 +11,17 @@ import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@Slf4j
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
 public class ProjectController {
@@ -28,22 +33,43 @@ public class ProjectController {
      * TODO
      * 유저 아이디로 project 찾는 메서드 추가
      */
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/test")
+    public ResponseEntity testProject(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestParam Long projectId) {
+        log.info("{}",userDetails.getUserId());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
-    public ResponseEntity<List<ProjectResponseDto>> getAllProjects() {
-        List<ProjectResponseDto> projectResponseDtos = projectService.getAllProjects();
+    public ResponseEntity<List<ProjectResponseDto>> getUserProjects(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
         return ResponseEntity.ok(projectResponseDtos);
     }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @GetMapping("/{projectId}")
+    public ResponseEntity<ProjectResponseDto> getProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable Long projectId) {
+        ProjectResponseDto projectResponseDto = projectService.getProjectById(projectId);
+        return ResponseEntity.ok(projectResponseDto);
+    }
+
+
+//    @GetMapping
+//    public ResponseEntity<List<ProjectResponseDto>> getAllProjects() {
+//        List<ProjectResponseDto> projectResponseDtos = projectService.getAllProjects();
+//        return ResponseEntity.ok(projectResponseDtos);
+//    }
 
     @PostMapping
     public ResponseEntity<ProjectResponseDto> postProject(@Valid @RequestBody ProjectRequestDto projectRequestDto) {
         ProjectResponseDto projectResponseDto = projectService.postProject(projectRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
-    }
-
-    @GetMapping("/{projectId}")
-    public ResponseEntity<ProjectResponseDto> getProject(@PathVariable Long projectId) {
-        ProjectResponseDto projectResponseDto = projectService.getProjectById(projectId);
-        return ResponseEntity.ok(projectResponseDto);
     }
 
     @PatchMapping("/{projectId}")

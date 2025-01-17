@@ -1,5 +1,6 @@
 package com.elice.team04backend.service.impl;
 
+import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
@@ -7,10 +8,17 @@ import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.entity.Label;
 import com.elice.team04backend.entity.Project;
+import com.elice.team04backend.entity.User;
+import com.elice.team04backend.entity.UserProjectRole;
 import com.elice.team04backend.repository.LabelRepository;
 import com.elice.team04backend.repository.ProjectRepository;
+import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.ProjectService;
+import com.elice.team04backend.service.UserProjectRoleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,26 +32,42 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final LabelRepository labelRepository;
+    private final UserProjectRoleService userProjectRoleService;
+    private final UserRepository userRepository;
 
     /*
-    @Preauthorize 사용하면 role이 MEMBER인 유저만 사용하게 가능 예외처리 안해도됨
-    CustomException 적용해야해서 임시 예외 설정
+        Project project = Project.builder()
+                .projectKey("h")
+                .name("hell")
+                .issueCount(0L)
+                .build();
+
+        UserProjectRole userProjectRole = UserProjectRole.builder()
+                .user(user)
+                .project(project)
+                .role(Role.MANAGER)
+                .build();
+
+        projectRepository.save(project);
+        userProjectRoleRepository.save(userProjectRole);
      */
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
+        return projectPage.stream()
+                .map(Project::from)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     @Override
     public ProjectResponseDto getProjectById(Long projectId) {
         Project findedProject = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
         return findedProject.from();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<ProjectResponseDto> getAllProjects() {
-        return projectRepository.findAll()
-                .stream()
-                .map(Project::from)
-                .toList();
     }
 
     @Override
@@ -109,5 +133,16 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
         projectRepository.delete(project);
+    }
+
+    //----------------------------------------------------------------------------
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectResponseDto> getAllProjects() {
+        return projectRepository.findAll()
+                .stream()
+                .map(Project::from)
+                .toList();
     }
 }
