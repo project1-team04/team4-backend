@@ -1,6 +1,7 @@
 package com.elice.team04backend.service.impl;
 
 import com.elice.team04backend.common.constant.Provider;
+import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.constant.UserStatus;
 import com.elice.team04backend.common.dto.request.SignUpRequestDto;
 import com.elice.team04backend.common.model.RedisDAO;
@@ -9,7 +10,11 @@ import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
 import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
+import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.User;
+import com.elice.team04backend.entity.UserProjectRole;
+import com.elice.team04backend.repository.ProjectRepository;
+import com.elice.team04backend.repository.UserProjectRoleRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -115,6 +120,8 @@ public class AuthServiceImpl implements AuthService {
         log.info("{} 이메일 전송, 인증코드 {}", verifyEmailRequestDto.email(), verificationCode);
     }
 
+    private final ProjectRepository projectRepository;
+    private final UserProjectRoleRepository userProjectRoleRepository;
 
     @PostConstruct
     public void init() {
@@ -127,7 +134,32 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode("!a12345678"))
                 .build();
 
+        User user2 = User.builder()
+                .email("hi564@naver.com")
+                .username("정태승2")
+                .provider(Provider.EMAIL)
+                .status(UserStatus.ACTIVE)
+                .isVerified(true)
+                .password(passwordEncoder.encode("!a12345678"))
+                .build();
+
+        Project project = Project.builder()
+                .projectKey("h")
+                .name("hell")
+                .issueCount(0L)
+                .build();
+
+        UserProjectRole userProjectRole = UserProjectRole.builder()
+                .user(user)
+                .project(project)
+                .role(Role.MANAGER)
+                .build();
+
         userRepository.save(user);
+        userRepository.save(user2);
+        projectRepository.save(project);
+        userProjectRoleRepository.save(userProjectRole);
+
     }
 
 }
