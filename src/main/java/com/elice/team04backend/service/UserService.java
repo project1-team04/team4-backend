@@ -1,7 +1,10 @@
 package com.elice.team04backend.service;
 
-import com.elice.team04backend.entity.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
-public interface UserService {
-    Long signIn(User user);
+public interface UserService extends UserDetailsService {
+
+    UserDetails loadUserByUsername(String username);
+
 }
