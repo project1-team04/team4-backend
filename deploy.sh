@@ -3,15 +3,6 @@
 # 서버에서 Git 레포지토리로 이동 (적절한 경로로 수정)
 cd /home/gitlab-runner/app || exit
 
-# Git 레포지토리로 이동했는지 확인
-if [ ! -d ".git" ]; then
-  echo "Not a git repository!"
-  exit 1
-fi
-
-# Git 레포지토리에서 최신 소스 코드 가져오기
-git pull origin main || exit  # 'main'은 여러분의 브랜치 이름으로 수정
-
 # Gradle 빌드 실행 (최신 소스 코드로 빌드)
 ./gradlew clean build || exit
 
