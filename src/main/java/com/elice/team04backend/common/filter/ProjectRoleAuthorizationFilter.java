@@ -47,11 +47,11 @@ public class ProjectRoleAuthorizationFilter extends OncePerRequestFilter {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String rawProjectId = request.getParameter("projectId"); // GET /api/project?projectId=12345 이렇게 적힌 경우, 12345를 가져옴.
+
         if (authentication != null && rawProjectId != null) {
             Long projectId = Long.valueOf(rawProjectId);
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             Long userId = userDetails.getUserId();
-
 
             UserProjectRole projectRole = userProjectRoleService.getUserRoleForProject(userId, projectId);
             log.info("projectRole: {}", projectRole.getRole());
