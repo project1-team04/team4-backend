@@ -35,6 +35,7 @@ build:
     - mkdir -p $(dirname $APP_CONFIG_PATH)
     - echo "$APPLICATION_DEV_YML" > $APP_CONFIG_PATH
     - ls -l $(dirname $APP_CONFIG_PATH)
+    - cp src/main/resources/application-dev.yml /home/gitlab-runner/builds/mhH7LCxy/0/pttrack/class_01/web_project_i/team04/team04-backend/src/main/resources/application-dev.yml
     - echo "Building the application"
     - ./gradlew clean build
     - echo "Starting deployment"
