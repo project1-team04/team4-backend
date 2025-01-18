@@ -33,9 +33,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
-        System.out.println("------------------------------------------------");
-        System.out.println("받은 메시지 : " + payload);
-        System.out.println("------------------------------------------------");
 
         // JSON -> MessageVo 객체 변환
         Message messageVo = objectMapper.readValue(payload, Message.class);
@@ -49,7 +46,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         chatMessageRepository.save(messageVo);
 
         // 이슈 ID를 통해 해당 이슈에 연결된 세션들 찾기
-        int issueId = messageVo.getIssueId();
+        int issueId = Integer.parseInt(messageVo.getIssueId());
         Set<WebSocketSession> sessions = sessionsByIssue.computeIfAbsent(issueId, k -> new HashSet<>());
 
         System.out.println("브로드캐스트할 세션들: " + sessions.size() + "개 세션");
