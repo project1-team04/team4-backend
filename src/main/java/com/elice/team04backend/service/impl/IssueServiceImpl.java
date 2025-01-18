@@ -5,10 +5,7 @@ import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
-import com.elice.team04backend.entity.Issue;
-import com.elice.team04backend.entity.IssueImage;
-import com.elice.team04backend.entity.Label;
-import com.elice.team04backend.entity.Project;
+import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.IssueRepository;
 import com.elice.team04backend.repository.LabelRepository;
 import com.elice.team04backend.repository.ProjectRepository;
@@ -38,17 +35,17 @@ public class IssueServiceImpl implements IssueService {
     private final UserRepository userRepository;
 
     @Override
-    public IssueResponseDto postIssue(Long projectId, IssueRequestDto issueRequestDto, List<MultipartFile> files) {
+    public IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
 
-        Label label;
-        label = settingLabel(projectId, issueRequestDto);
+        Label label = settingLabel(projectId, issueRequestDto);
 
         String issueKey = generateIssueKey(project);
-        Issue issue = issueRequestDto.from(project, label, issueKey);
-
-        uploadImage(files, issue);
+        Issue issue = issueRequestDto.from(user, project, label, issueKey);
 
         project.addIssue(issue);
         Issue savedIssue = issueRepository.save(issue);
@@ -56,33 +53,12 @@ public class IssueServiceImpl implements IssueService {
     }
 
     private Label settingLabel(Long projectId, IssueRequestDto issueRequestDto) {
-        Label label;
         if (issueRequestDto.getLabelId() != null) {
-            label = labelRepository.findById(issueRequestDto.getLabelId())
+            return labelRepository.findById(issueRequestDto.getLabelId())
                     .orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
         } else {
-            label = labelRepository.findByProjectIdAndName(projectId, "None")
+            return labelRepository.findByProjectIdAndName(projectId, "None")
                     .orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
-        }
-        return label;
-    }
-
-    private void uploadImage(List<MultipartFile> files, Issue issue) {
-        if (files != null && !files.isEmpty()) {
-            for (MultipartFile file : files) {
-                try {
-                    String imageUrl = firebaseStorageService.uploadImage(file);
-                    String originalName = file.getOriginalFilename();
-                    IssueImage issueImage = IssueImage.builder()
-                            .issue(issue)
-                            .imageUrl(imageUrl)
-                            .originalName(originalName)
-                            .build();
-                    issue.addIssueImages(issueImage);
-                } catch (IOException e) {
-                    throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
-                }
-            }
         }
     }
 
@@ -128,4 +104,47 @@ public class IssueServiceImpl implements IssueService {
         project.getIssues().remove(findedIssue);
         issueRepository.delete(findedIssue);
     }
+
+    @Override
+    public String uploadImage(Long issueId, MultipartFile file) {
+        Issue issue = issueRepository.findById(issueId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
+
+        try {
+            String imageUrl = firebaseStorageService.uploadImage(file);
+            String originalName = file.getOriginalFilename();
+
+            IssueImage issueImage = IssueImage.builder()
+                    .issue(issue)
+                    .imageUrl(imageUrl)
+                    .originalName(originalName)
+                    .build();
+
+            issue.addIssueImages(issueImage);
+            issueRepository.save(issue);
+
+            return imageUrl;
+        } catch (IOException e) {
+            throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
+        }
+    }
+
+//    private void uploadImage(List<MultipartFile> files, Issue issue) {
+//        if (files != null && !files.isEmpty()) {
+//            for (MultipartFile file : files) {
+//                try {
+//                    String imageUrl = firebaseStorageService.uploadImage(file);
+//                    String originalName = file.getOriginalFilename();
+//                    IssueImage issueImage = IssueImage.builder()
+//                            .issue(issue)
+//                            .imageUrl(imageUrl)
+//                            .originalName(originalName)
+//                            .build();
+//                    issue.addIssueImages(issueImage);
+//                } catch (IOException e) {
+//                    throw new CustomException(ErrorCode.IMAGE_UPLOAD_FAILED);
+//                }
+//            }
+//        }
+//    }
 }
