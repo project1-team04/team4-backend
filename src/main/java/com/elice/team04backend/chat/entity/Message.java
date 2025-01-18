@@ -16,7 +16,7 @@ public class Message {
     private String id;
 
     @JsonProperty("issue_id")
-    private int issueId;
+    private String issueId;
 
     @JsonProperty("sender") // JSON의 "sender" 필드와 매핑
     private String sender;
@@ -38,11 +38,11 @@ public class Message {
         this.id = id;
     }
 
-    public int getIssueId() {
+    public String getIssueId() {
         return issueId;
     }
 
-    public void setIssueId(int issueId) {
+    public void setIssueId(String issueId) {
         this.issueId = issueId;
     }
 
