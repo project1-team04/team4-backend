@@ -33,9 +33,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
-        System.out.println("------------------------------------------------");
-        System.out.println("받은 메시지 : " + payload);
-        System.out.println("------------------------------------------------");
 
         // JSON -> MessageVo 객체 변환
         Message messageVo = objectMapper.readValue(payload, Message.class);
