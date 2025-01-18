@@ -1,4 +1,4 @@
-package com.elice.team04backend.dto.Project;
+package com.elice.team04backend.dto.project;
 
 
 import lombok.*;
@@ -11,10 +11,7 @@ import lombok.*;
 public class ProjectResponseDto {
 
     private Long id;
-
     private String projectKey;
-
     private String name;
-
     private Long issueCount;
 }

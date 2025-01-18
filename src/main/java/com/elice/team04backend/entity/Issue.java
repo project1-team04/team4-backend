@@ -2,6 +2,9 @@ package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.common.entity.BaseEntity;
+import com.elice.team04backend.dto.issue.IssueResponseDto;
+import com.elice.team04backend.dto.issue.IssueUpdateDto;
+import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,6 +14,7 @@ import org.hibernate.envers.AuditOverride;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -33,15 +37,17 @@ public class Issue extends BaseEntity {
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee_user_id", nullable = false)
+    //@JoinColumn(name = "assignee_user_id", nullable = false)
+    @JoinColumn(name = "assignee_user_id")
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reporter_user_id", nullable = false)
+    //@JoinColumn(name = "reporter_user_id", nullable = false)
+    @JoinColumn(name = "reporter_user_id")
     private User reporter;
 
-    @Column(name = "issue_key", nullable = false)
-    private Long issueKey;
+    @Column(name = "issue_key")
+    private String issueKey;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -53,6 +59,36 @@ public class Issue extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
 
-    @OneToMany(mappedBy = "issue")
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueImage> issueImages = new ArrayList<>();
+
+    public void update(IssueUpdateDto issueUpdateDto) {
+        this.description = issueUpdateDto.getDescription();
+        this.troubleShooting = issueUpdateDto.getTroubleShooting();
+    }
+
+    public void addIssueImages(IssueImage issueImage) {
+        if (this.getIssueImages() == null) {
+            this.issueImages = new ArrayList<>();
+        }
+        issueImage.setIssue(this);
+        this.getIssueImages().add(issueImage);
+    }
+
+    public IssueResponseDto from() {
+        return IssueResponseDto.builder()
+                .id(this.id)
+                .projectId(this.getProject().getId())
+                .labelId(this.getLabel().getId())
+                //.assigneeUserId(this.getAssignee().getId())
+                //.reporterUserId(this.getReporter().getId())
+                .issueKey(this.getIssueKey())
+                .description(this.getDescription())
+                .troubleShooting(this.getTroubleShooting())
+                .status(this.getStatus())
+                .issueImages(this.issueImages.stream()
+                        .map(IssueImage::from)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }

@@ -1,15 +1,15 @@
 package com.elice.team04backend.service;
 
-import com.elice.team04backend.dto.Project.ProjectRequestDto;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
-import com.elice.team04backend.dto.Project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.ProjectRequestDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectUpdateDto;
 
 import java.util.List;
 
 public interface ProjectService {
-    ProjectResponseDto getProject(Long projectId);
-    List<ProjectResponseDto> getAllProjects();
-    ProjectResponseDto postProject(ProjectRequestDto projectRequestDto);
-    ProjectResponseDto patchProject(ProjectUpdateDto projectUpdateDto);
-    void deleteProject(Long projectId);
+    List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size);
+    ProjectResponseDto getProjectById(Long projectId);
+    ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto);
+    ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto);
+    void deleteProject(Long userId, Long projectId);
 }
