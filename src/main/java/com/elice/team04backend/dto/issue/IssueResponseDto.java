@@ -16,10 +16,10 @@ public class IssueResponseDto {
     private Long projectId;
     private Long labelId;
     //private Long assigneeUserId;
-    //private Long reporterUserId;
+    private Long reporterUserId;
     private String issueKey;
     private String description;
     private String troubleShooting;
     private IssueStatus status;
-    private List<IssueImageResponseDto> issueImages;
+    //private List<IssueImageResponseDto> issueImages;
 }
