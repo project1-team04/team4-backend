@@ -49,7 +49,7 @@ public class Label extends BaseEntity {
 
     public LabelResponseDto from() {
         return LabelResponseDto.builder()
-                .id(this.getId())
+                .id(String.valueOf(this.getId()))
                 .projectId(this.getProject().getId())
                 .name(this.getName())
                 .description(this.getDescription())

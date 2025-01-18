@@ -62,10 +62,10 @@ public class ProjectController {
     }
 
     @Operation(summary = "단일 프로젝트 조회", description = "프로젝트 id로 단일 프로젝트를 조회합니다.")
-    @GetMapping("/{projectId}")
+    @GetMapping("/details")
     public ResponseEntity<ProjectResponseDto> getProjectDetails(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @PathVariable Long projectId) {
+            @RequestParam Long projectId) {
         ProjectResponseDto projectResponseDto = projectService.getProjectById(projectId);
         return ResponseEntity.ok(projectResponseDto);
     }
@@ -93,30 +93,41 @@ public class ProjectController {
 
     //라벨 관련 컨트롤러
 
-    @PostMapping("/{projectId}/labels")
+    @Operation(summary = "라벨 추가", description = "특정 프로젝트에 라벨을 추가합니다.")
+    @PostMapping("/labels")
     public ResponseEntity<LabelResponseDto> postLabel(
-            @PathVariable Long projectId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId,
             @Valid @RequestBody LabelRequestDto labelRequestDto) {
         LabelResponseDto labelResponseDto = labelService.postLabel(projectId, labelRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(labelResponseDto);
     }
 
-    @GetMapping("/{projectId}/labels")
-    public ResponseEntity<List<LabelResponseDto>> getAllLabelsByProjectId(@PathVariable Long projectId) {
+    @Operation(summary = "라벨 조회", description = "특정 프로젝트의 모든 라벨을 조회합니다.")
+    @GetMapping("/labels")
+    public ResponseEntity<List<LabelResponseDto>> getAllLabelsByProjectId(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId) {
         List<LabelResponseDto> labelResponseDtos = labelService.getAllLabelsByProjectId(projectId);
         return ResponseEntity.ok(labelResponseDtos);
     }
 
-    @PatchMapping("/{projectId}/labels/{labelId}")
+    @Operation(summary = "라벨 수정", description = "특정 프로젝트의 라벨을 수정합니다.")
+    @PatchMapping("/labels")
     public ResponseEntity<LabelResponseDto> patchLabel(
-            @PathVariable Long labelId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            //@RequestParam Long projectId,
+            @RequestParam Long labelId,
             @Valid @RequestBody LabelUpdateDto labelUpdateDto) {
         LabelResponseDto labelResponseDto = labelService.patchLabel(labelId, labelUpdateDto);
         return ResponseEntity.ok(labelResponseDto);
     }
 
-    @DeleteMapping("/{projectId}/labels/{labelId}")
-    public ResponseEntity<Void> deleteLabel(@PathVariable Long labelId) {
+    @Operation(summary = "라벨 삭제", description = "특정 프로젝트의 라벨을 삭제합니다.")
+    @DeleteMapping("/labels")
+    public ResponseEntity<Void> deleteLabel(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long labelId) {
         labelService.deleteLabel(labelId);
         return ResponseEntity.noContent().build();
     }
