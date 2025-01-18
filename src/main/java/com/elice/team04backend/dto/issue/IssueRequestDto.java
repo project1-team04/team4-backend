@@ -39,7 +39,7 @@ public class IssueRequestDto {
     @NotNull(message = "이슈 상태는 필수입니다.") // enum 타입 에는 blank 사용하면 에러발생
     private IssueStatus status;
 
-    private List<IssueImage> issueImages;
+    //private List<IssueImage> issueImages;
 
 //    public Issue from(Project project, User assignee, User reporter, String issueKey) {
 //        return Issue.builder()
@@ -53,23 +53,16 @@ public class IssueRequestDto {
 //                .build();
 //    }
 
-    public Issue from(Project project, Label label, String generatedIssueKey) {
-        Issue issue = Issue.builder()
+    public Issue from(User reporter, Project project, Label label, String generatedIssueKey) {
+        return Issue.builder()
                 .project(project)
                 .label(label)
+                .reporter(reporter)
                 .issueKey(generatedIssueKey)
                 .description(this.getDescription())
                 .troubleShooting(this.getTroubleShooting())
                 .status(this.getStatus())
                 .build();
-        if (this.issueImages != null) {
-            this.issueImages.forEach(url -> {
-                IssueImage image = new IssueImage();
-                image.setImageUrl(String.valueOf(url));
-                image.setIssue(issue);
-                issue.addIssueImages(image);
-            });
-        }
-        return issue;
+
     }
 }
