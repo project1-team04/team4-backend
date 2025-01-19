@@ -42,8 +42,7 @@ public class Issue extends BaseEntity {
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "reporter_user_id", nullable = false)
-    @JoinColumn(name = "reporter_user_id")
+    @JoinColumn(name = "reporter_user_id", nullable = false)
     private User reporter;
 
     @Column(name = "issue_key")
@@ -77,18 +76,15 @@ public class Issue extends BaseEntity {
 
     public IssueResponseDto from() {
         return IssueResponseDto.builder()
-                .id(this.id)
+                .id(String.valueOf(this.id))
                 .projectId(this.getProject().getId())
                 .labelId(this.getLabel().getId())
                 //.assigneeUserId(this.getAssignee().getId())
-                //.reporterUserId(this.getReporter().getId())
+                .reporterUserId(this.getReporter().getId())
                 .issueKey(this.getIssueKey())
                 .description(this.getDescription())
                 .troubleShooting(this.getTroubleShooting())
                 .status(this.getStatus())
-                .issueImages(this.issueImages.stream()
-                        .map(IssueImage::from)
-                        .collect(Collectors.toList()))
                 .build();
     }
 }

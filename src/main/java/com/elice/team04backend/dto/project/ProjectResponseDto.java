@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 public class ProjectResponseDto {
 
-    private Long id;
+    private String id;
     private String projectKey;
     private String name;
     private Long issueCount;

@@ -8,7 +8,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LabelResponseDto {
-    private Long id;
+    private String id;
     private Long projectId;
     private String name;
     private String description;

@@ -8,9 +8,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IssueService {
-    IssueResponseDto postIssue(Long projectId, IssueRequestDto issueRequestDto, List<MultipartFile> files);
+    IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto);
     IssueResponseDto getIssueById(Long issueId);
     List<IssueResponseDto> getIssueByProjectId(Long projectId);
     IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto);
     void deleteIssue(Long issueId);
+    String uploadImage(Long issueId, MultipartFile file);
 }
