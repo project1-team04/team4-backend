@@ -3,6 +3,7 @@ package com.elice.team04backend.service.impl;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
+import com.elice.team04backend.common.service.EmailService;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,6 +39,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
     private final JavaMailSender mailSender;
+    private final EmailService emailService;
+    private Project savedProject;
 
     @Transactional(readOnly = true)
     @Override
@@ -57,18 +61,28 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
+    public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto, List<String> emails) {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
+        savedProject = projectRepository.save(project);
 
-        Project savedProject = projectRepository.save(project);
-        createDefaultLabels(savedProject);
-
-        UserProjectRole userProjectRole = setUserAsManager(userId, savedProject);
+        UserProjectRole userProjectRole = UserProjectRole.builder()
+                .user(User.builder().id(userId).build())
+                .project(savedProject)
+                .role(Role.MANAGER)
+                .build();
         userProjectRoleRepository.save(userProjectRole);
+
+        if(emails != null || !emails.isEmpty()) {
+            for (String email : emails) {
+                sendInvitationEmail(project.getName(), email);
+            }
+        }
+        createDefaultLabels(savedProject);
 
         return savedProject.from();
     }
+
 
     private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
         UserProjectRole userProjectRole = UserProjectRole.builder()
@@ -146,60 +160,14 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.deleteById(projectId);
     }
 
-    @Override
-    public void inviteUserToProject(Long managerId, Long projectId, String email) {
-        UserProjectRole managerRole = userProjectRoleRepository.findByUserIdAndProjectId(managerId, projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
-
-        if (managerRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
-        }
-
-        User invitedUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        String token = UUID.randomUUID().toString();
-        Invitation invitation = Invitation.builder()
-                .user(invitedUser)
-                .project(managerRole.getProject())
-                .token(token)
-                .build();
-        invitationRepository.save(invitation);
-
-        sendInvitationEmail(email, token);
-    }
-
-
-
-    private void sendInvitationEmail(String email, String token) {
-        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
-        String subject = "Project Invitation";
-        String content = String.format(
-                "<p>You have been invited to join a project.</p>" +
-                        "<p>Click the link below to accept the invitation:</p>" +
-                        "<a href=\"%s\">Accept Invitation</a>", invitationLink);
-
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setTo(email);
-            helper.setSubject(subject);
-            helper.setText(content, true);
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
-        }
-    }
-
-    @Override
-    public void acceptInvitation(String token) {
-        Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITATION));
-
-        UserProjectRole newMember = setUserAsMember(invitation);
-        userProjectRoleRepository.save(newMember);
-
-        invitationRepository.deleteById(invitation.getId());
+        private void sendInvitationEmail(String projectName,String email) {
+            String content = "안녕하세요,\n\n" +
+                    "귀하를 " + projectName + " 프로젝트에 초대합니다.\n\n" +
+                    "해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며, " +
+                    "계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.\n\n" +
+                    "감사합니다.\n\n" +
+                    "초대 수락시 링크를 눌러주세요: http://localhost:8080/api/accept/invite?email=" + email;
+            emailService.sendEmail(email, "안녕하세요! 귀하를 초대합니다", content);
     }
 
     private static UserProjectRole setUserAsMember(Invitation invitation) {
@@ -241,6 +209,21 @@ public class ProjectServiceImpl implements ProjectService {
 
         newManager.setRole(Role.MANAGER);
         userProjectRoleRepository.save(newManager);
+    }
+
+    @Override
+    public String inviteMember(String email) {
+        if (userRepository.existsByEmail(email)) {
+            Optional<User> user = userRepository.findByEmail(email);
+            UserProjectRole userProjectRole = UserProjectRole.builder()
+                    .user(User.builder().id(user.get().getId()).build())
+                    .project(savedProject)
+                    .role(Role.MEMBER)
+                    .build();
+            userProjectRoleRepository.save(userProjectRole);
+            return "성공적으로 프로젝트에 참여하였습니다";
+        }
+        return "해당 이메일은 가입이 되지 않은 이메일 입니다";
     }
 
 }
