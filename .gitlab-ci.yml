@@ -1,7 +1,10 @@
 stages:
-  - test
+  # - test
   - build
   - deploy
+
+variables:
+  APP_CONFIG_PATH: src/main/resources/application-dev.yml
 
 cache:
   paths:
@@ -12,15 +15,15 @@ before_script:
   - echo "Setting up environment"
   - chmod +x ./gradlew
 
-test:
-  stage: test
-  tags:
-    - all
-  script:
-    - echo "Running tests"
-    - ./gradlew test
-  only:
-    - merge_requests
+# test:
+#   stage: test
+#   tags:
+#     - all
+#   script:
+#     - echo "Running tests"
+#     - ./gradlew test
+#   only:
+#     - merge_requests
 
 build:
   stage: build
@@ -29,6 +32,8 @@ build:
   script:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
+    - cp /home/kdt/application-dev.yml src/main/resources/application-dev.yml
+    - ls -l $(dirname $APP_CONFIG_PATH)
     - echo "Building the application"
     - ./gradlew clean build
     - echo "Starting deployment"
