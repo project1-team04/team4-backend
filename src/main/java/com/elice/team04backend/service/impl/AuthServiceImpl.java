@@ -152,10 +152,51 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode("!a12345678"))
                 .build();
 
+        User user4 = User.builder()
+                .email("nerostarin@naver.com")
+                .username("이태정")
+                .provider(Provider.EMAIL)
+                .status(UserStatus.ACTIVE)
+                .isVerified(true)
+                .password(passwordEncoder.encode("!a12345678"))
+                .build();
+
+        User user5 = User.builder()
+                .email("minju_love@naver.com")
+                .username("김민주")
+                .provider(Provider.EMAIL)
+                .status(UserStatus.ACTIVE)
+                .isVerified(true)
+                .password(passwordEncoder.encode("!a12345678"))
+                .build();
+
+        User user6 = User.builder()
+                .email("choi_seo@naver.com")
+                .username("최서영")
+                .provider(Provider.EMAIL)
+                .status(UserStatus.ACTIVE)
+                .isVerified(true)
+                .password(passwordEncoder.encode("!a12345678"))
+                .build();
+
+
+
         Project project = Project.builder()
                 .projectKey("h")
                 .name("hell")
                 .issueCount(0L)
+                .build();
+
+        Project project2 = Project.builder()
+                .projectKey("m")
+                .name("moonlight")
+                .issueCount(3L)
+                .build();
+
+        Project project3 = Project.builder()
+                .projectKey("s")
+                .name("sunrise")
+                .issueCount(5L)
                 .build();
 
         UserProjectRole userProjectRole = UserProjectRole.builder()
@@ -164,11 +205,34 @@ public class AuthServiceImpl implements AuthService {
                 .role(Role.MANAGER)
                 .build();
 
+        UserProjectRole userProjectRole2 = UserProjectRole.builder()
+                .user(user2)
+                .project(project2)
+                .role(Role.MANAGER)
+                .build();
+
+        UserProjectRole userProjectRole3 = UserProjectRole.builder()
+                .user(user3)
+                .project(project3)
+                .role(Role.MANAGER)
+                .build();
+
+
+
         userRepository.save(user);
         userRepository.save(user2);
         userRepository.save(user3);
+        userRepository.save(user4);
+        userRepository.save(user5);
+        userRepository.save(user6);
+
         projectRepository.save(project);
+        projectRepository.save(project2);
+        projectRepository.save(project3);
+
         userProjectRoleRepository.save(userProjectRole);
+        userProjectRoleRepository.save(userProjectRole2);
+        userProjectRoleRepository.save(userProjectRole3);
 
     }
 

@@ -53,14 +53,17 @@ public class ProjectController {
         return ResponseEntity.ok(projectResponseDtos);
     }
 
-    @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성합니다.")
+    @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성하고 맴버에게 이메일로 초대를보냅니다.")
     @PostMapping
     public ResponseEntity<ProjectResponseDto> postProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ProjectRequestDto projectRequestDto) {
-        ProjectResponseDto projectResponseDto = projectService.postProject(userDetails.getUserId(), projectRequestDto);
+        List<String> emails = projectRequestDto.getEmails();
+        ProjectResponseDto projectResponseDto = projectService.postProject(userDetails.getUserId(), projectRequestDto,emails);
         return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
     }
+
+
 
     @Operation(summary = "단일 프로젝트 조회", description = "프로젝트 id로 단일 프로젝트를 조회합니다.")
     @GetMapping("/details")
@@ -131,19 +134,6 @@ public class ProjectController {
             @RequestParam Long labelId) {
         labelService.deleteLabel(labelId);
         return ResponseEntity.noContent().build();
-    }
-
-    // 초대 및 탈퇴 관련 컨트롤러
-
-    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트 매니저가 유저를 초대합니다.")
-    @PostMapping("/invite")
-    @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> inviteUserToProject(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId,
-            @RequestParam String email) {
-        projectService.inviteUserToProject(userDetails.getUserId(), projectId, email);
-        return ResponseEntity.ok().build();
     }
 
     /**TODO
