@@ -12,4 +12,9 @@ public interface ProjectService {
     ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto);
     ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto);
     void deleteProject(Long userId, Long projectId);
+
+    // 초대 관련
+    void inviteUserToProject(Long managerId, Long projectId, String email);
+    void acceptInvitation(String token);
+    void leaveProject(Long userId, Long projectId, Long newManagerId);
 }
