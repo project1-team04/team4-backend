@@ -27,8 +27,6 @@ public class Message {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
-    @JsonProperty("read_by")
-    private Set<String> readBy = new HashSet<>();
 
     public String getId() {
         return id;
@@ -68,13 +66,5 @@ public class Message {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
-    }
-
-    public Set<String> getReadBy() {
-        return readBy;
-    }
-
-    public void setReadBy(Set<String> readBy) {
-        this.readBy = readBy;
     }
 }
