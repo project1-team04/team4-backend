@@ -125,40 +125,40 @@ public class AuthServiceImpl implements AuthService {
 
     @PostConstruct
     public void init() {
-        User user = User.builder()
-                .email("hi563@naver.com")
-                .username("정태승")
-                .provider(Provider.EMAIL)
-                .status(UserStatus.ACTIVE)
-                .isVerified(true)
-                .password(passwordEncoder.encode("!a12345678"))
-                .build();
-
-        User user2 = User.builder()
-                .email("hi564@naver.com")
-                .username("정태승2")
-                .provider(Provider.EMAIL)
-                .status(UserStatus.ACTIVE)
-                .isVerified(true)
-                .password(passwordEncoder.encode("!a12345678"))
-                .build();
-
-        Project project = Project.builder()
-                .projectKey("h")
-                .name("hell")
-                .issueCount(0L)
-                .build();
-
-        UserProjectRole userProjectRole = UserProjectRole.builder()
-                .user(user)
-                .project(project)
-                .role(Role.MANAGER)
-                .build();
-
-        userRepository.save(user);
-        userRepository.save(user2);
-        projectRepository.save(project);
-        userProjectRoleRepository.save(userProjectRole);
+//        User user = User.builder()
+//                .email("hi563@naver.com")
+//                .username("정태승")
+//                .provider(Provider.EMAIL)
+//                .status(UserStatus.ACTIVE)
+//                .isVerified(true)
+//                .password(passwordEncoder.encode("!a12345678"))
+//                .build();
+//
+//        User user2 = User.builder()
+//                .email("hi564@naver.com")
+//                .username("정태승2")
+//                .provider(Provider.EMAIL)
+//                .status(UserStatus.ACTIVE)
+//                .isVerified(true)
+//                .password(passwordEncoder.encode("!a12345678"))
+//                .build();
+//
+//        Project project = Project.builder()
+//                .projectKey("h")
+//                .name("hell")
+//                .issueCount(0L)
+//                .build();
+//
+//        UserProjectRole userProjectRole = UserProjectRole.builder()
+//                .user(user)
+//                .project(project)
+//                .role(Role.MANAGER)
+//                .build();
+//
+//        userRepository.save(user);
+//        userRepository.save(user2);
+//        projectRepository.save(project);
+//        userProjectRoleRepository.save(userProjectRole);
 
     }
 
