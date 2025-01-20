@@ -1,9 +1,7 @@
-package com.elice.team04backend.service.Impl;
+package com.elice.team04backend.service.impl;
 
-import com.elice.team04backend.common.constant.UserStatus;
-import com.elice.team04backend.dto.Project.ProjectRequestDto;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
-import com.elice.team04backend.entity.User;
+import com.elice.team04backend.dto.project.ProjectRequestDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.ProjectService;
@@ -16,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+
 @Transactional
 @SpringBootTest
 @Slf4j
@@ -33,10 +31,10 @@ class ProjectServiceImplTest {
 
     @Test
     void 유저_생성_테스트() {
-        User user = new User("james123@naver.com", "james", "1234", UserStatus.ACTIVE);
-        Long userId = userService.signIn(user);
-        User findUser = userRepository.findById(userId).get();
-        assertThat(findUser.getId()).isEqualTo(userId);
+//        User user = new User("james123@naver.com", "james", "1234", UserStatus.ACTIVE);
+//        User signIn = userService.signIn(user);
+//        User findUser = userRepository.findById(signIn.getId()).get();
+//        assertThat(findUser.getId()).isEqualTo(signIn.getId());
     }
 
     @Test

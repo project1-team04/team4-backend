@@ -1,22 +1,45 @@
 package com.elice.team04backend.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
-    public ResponseEntity<ExceptionResponse> customExceptionHandler(CustomException exception){
-        ExceptionResponse response = exception.toResponse();
-        ErrorCode code = exception.getErrorCode();
-        log.error("### ERROR!! code: {}, code name: {}, code message: {}", code.code, code.codeName, code.message);
+    public ResponseEntity<ExceptionResponse> handleCustomException(CustomException ex) {
+        ErrorCode errorCode = ex.getErrorCode();
+        log.error("### ERROR!! Status: {}, Code Name: {}, Message: {}",
+                errorCode.getHttpStatus().value(), errorCode.getCodeName(), errorCode.getMessage());
+        return ResponseEntity.status(errorCode.getHttpStatus())
+                .body(ex.toResponse());
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ExceptionResponse> handleValidationException(MethodArgumentNotValidException ex) {
+        BindingResult bindingResult = ex.getBindingResult();
 
-        return new ResponseEntity<>(response, HttpStatus.valueOf(code.code));
+        String errorDetails = bindingResult.getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+        log.warn("Validation failed: {}", errorDetails);
+
+        return ResponseEntity.status(ErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
+                .body(new ExceptionResponse(ErrorCode.INVALID_INPUT_VALUE));
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ExceptionResponse> handleGeneralException(Exception ex) {
+        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.getHttpStatus())
+                .body(new ExceptionResponse(ErrorCode.INTERNAL_SERVER_ERROR));
     }
 
 }

@@ -1,8 +1,8 @@
 package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.entity.BaseEntity;
-import com.elice.team04backend.dto.Project.ProjectResponseDto;
-import com.elice.team04backend.dto.Project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,23 +35,34 @@ public class Project extends BaseEntity {
     @Column(name = "issue_count", nullable = false)
     private Long issueCount;
 
-    @OneToMany(mappedBy = "project")
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProjectRole> userProjectRoles = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
 
-    public void updateName(ProjectUpdateDto projectUpdateDto) {
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Label> labels = new ArrayList<>();
+
+    public void update(ProjectUpdateDto projectUpdateDto) {
         this.name = projectUpdateDto.getName();
+    }
+
+    public void addIssue(Issue issue) {
+        this.issues.add(issue);
+        this.issueCount = (long) this.issues.size();
+    }
+
+    public void addLabel(Label label) {
+        this.labels.add(label);
     }
 
     public ProjectResponseDto from() {
         return ProjectResponseDto.builder()
-                .id(this.id)
-                .projectKey(this.projectKey)
-                .issueCount(this.issueCount)
-                .name(this.name)
+                .id(String.valueOf(this.getId()))
+                .projectKey(this.getProjectKey())
+                .issueCount(this.getIssueCount())
+                .name(this.getName())
                 .build();
-
     }
 }

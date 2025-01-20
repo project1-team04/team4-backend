@@ -5,14 +5,13 @@ import lombok.Getter;
 
 @Getter
 public class ExceptionResponse {
+    private final int status;
+    private final String codeName;
+    private final String message;
 
-    private int code;
-    private String codeName;
-    private String message;
-
-    public ExceptionResponse(ErrorCode errorCode){
-        code = errorCode.code;
-        codeName = errorCode.codeName;
-        message = errorCode.message;
+    public ExceptionResponse(ErrorCode errorCode) {
+        this.status = errorCode.getHttpStatus().value();
+        this.codeName = errorCode.getCodeName();
+        this.message = errorCode.getMessage();
     }
 }

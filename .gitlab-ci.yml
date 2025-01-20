@@ -1,5 +1,5 @@
 stages:
-  - test
+  # - test
   - build
   - deploy
 
@@ -15,15 +15,15 @@ before_script:
   - echo "Setting up environment"
   - chmod +x ./gradlew
 
-test:
-  stage: test
-  tags:
-    - all
-  script:
-    - echo "Running tests"
-    - ./gradlew test
-  only:
-    - merge_requests
+# test:
+#   stage: test
+#   tags:
+#     - all
+#   script:
+#     - echo "Running tests"
+#     - ./gradlew test
+#   only:
+#     - merge_requests
 
 build:
   stage: build

@@ -1,6 +1,8 @@
 package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.entity.BaseEntity;
+import com.elice.team04backend.dto.label.LabelResponseDto;
+import com.elice.team04backend.dto.label.LabelUpdateDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +25,10 @@ public class Label extends BaseEntity {
     @Column(name = "label_id", nullable = false)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -32,8 +38,23 @@ public class Label extends BaseEntity {
     @Column(name = "hexcode", nullable = false, length = 7)
     private String hexCode;
 
-    @OneToMany(mappedBy = "label")
+    @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
 
+    public void update(LabelUpdateDto labelUpdateDto) {
+        this.name = labelUpdateDto.getName();
+        this.description = labelUpdateDto.getDescription();
+        this.hexCode = labelUpdateDto.getHexCode();
+    }
+
+    public LabelResponseDto from() {
+        return LabelResponseDto.builder()
+                .id(String.valueOf(this.getId()))
+                .projectId(this.getProject().getId())
+                .name(this.getName())
+                .description(this.getDescription())
+                .hexCode(this.getHexCode())
+                .build();
+    }
 
 }
