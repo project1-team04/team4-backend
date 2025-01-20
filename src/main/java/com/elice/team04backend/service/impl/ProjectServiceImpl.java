@@ -6,25 +6,25 @@ import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
-import com.elice.team04backend.entity.Label;
-import com.elice.team04backend.entity.Project;
-import com.elice.team04backend.entity.User;
-import com.elice.team04backend.entity.UserProjectRole;
-import com.elice.team04backend.repository.LabelRepository;
-import com.elice.team04backend.repository.ProjectRepository;
-import com.elice.team04backend.repository.UserProjectRoleRepository;
-import com.elice.team04backend.repository.UserRepository;
+import com.elice.team04backend.entity.*;
+import com.elice.team04backend.repository.*;
 import com.elice.team04backend.service.ProjectService;
 import com.elice.team04backend.service.UserProjectRoleService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +35,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final LabelRepository labelRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
+    private final InvitationRepository invitationRepository;
+    private final JavaMailSender mailSender;
 
     @Transactional(readOnly = true)
     @Override
@@ -58,18 +60,25 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
-        Project savedProject = projectRepository.save(project);
 
+        Project savedProject = projectRepository.save(project);
+        createDefaultLabels(savedProject);
+
+        UserProjectRole userProjectRole = setUserAsManager(userId, savedProject);
+        userProjectRoleRepository.save(userProjectRole);
+
+        return savedProject.from();
+    }
+
+    private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
         UserProjectRole userProjectRole = UserProjectRole.builder()
                         .user(User.builder().id(userId).build())
                         .project(savedProject)
                         .role(Role.MANAGER)
                         .build();
-        userProjectRoleRepository.save(userProjectRole);
-        createDefaultLabels(savedProject);
-
-        return savedProject.from();
+        return userProjectRole;
     }
+
     private void createDefaultLabels(Project project) {
         List<Label> defaultLabels = Arrays.asList(
                 new Label(null, project, "None", "기본 라벨", "#808080", project.getIssues()),
@@ -132,9 +141,106 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
         if (userProjectRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
         }
         projectRepository.deleteById(projectId);
+    }
+
+    @Override
+    public void inviteUserToProject(Long managerId, Long projectId, String email) {
+        UserProjectRole managerRole = userProjectRoleRepository.findByUserIdAndProjectId(managerId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (managerRole.getRole() != Role.MANAGER) {
+            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+        }
+
+        User invitedUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        String token = UUID.randomUUID().toString();
+        Invitation invitation = Invitation.builder()
+                .user(invitedUser)
+                .project(managerRole.getProject())
+                .token(token)
+                .build();
+        invitationRepository.save(invitation);
+
+        sendInvitationEmail(email, token);
+    }
+
+
+
+    private void sendInvitationEmail(String email, String token) {
+        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
+        String subject = "Project Invitation";
+        String content = String.format(
+                "<p>You have been invited to join a project.</p>" +
+                        "<p>Click the link below to accept the invitation:</p>" +
+                        "<a href=\"%s\">Accept Invitation</a>", invitationLink);
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    @Override
+    public void acceptInvitation(String token) {
+        Invitation invitation = invitationRepository.findByToken(token)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITATION));
+
+        UserProjectRole newMember = setUserAsMember(invitation);
+        userProjectRoleRepository.save(newMember);
+
+        invitationRepository.deleteById(invitation.getId());
+    }
+
+    private static UserProjectRole setUserAsMember(Invitation invitation) {
+        UserProjectRole newMember = UserProjectRole.builder()
+                .user(invitation.getUser())
+                .project(invitation.getProject())
+                .role(Role.MEMBER)
+                .build();
+        return newMember;
+    }
+
+    @Override
+    public void leaveProject(Long userId, Long projectId, Long newManagerId) {
+        UserProjectRole userRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (userRole.getRole() == Role.MANAGER) {
+            handleManagerLeaving(projectId, userId, newManagerId);
+        }
+
+        userProjectRoleRepository.delete(userRole);
+    }
+
+    private void handleManagerLeaving(Long userId, Long projectId, Long newManagerId) {
+        List<UserProjectRole> members = userProjectRoleRepository.findAllByProjectId(projectId);
+
+        if (members.size() <= 1) {
+            throw new CustomException(ErrorCode.LAST_MANAGER_CANNOT_LEAVE);
+        }
+
+        if (newManagerId == null) {
+            throw new CustomException(ErrorCode.NEW_MANAGER_REQUIRED);
+        }
+
+        UserProjectRole newManager = members.stream()
+                .filter(member -> member.getUser().getId().equals(newManagerId))
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ErrorCode.NEW_MANAGER_NOT_FOUND));
+
+        newManager.setRole(Role.MANAGER);
+        userProjectRoleRepository.save(newManager);
     }
 
 }
