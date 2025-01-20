@@ -143,6 +143,15 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode("!a12345678"))
                 .build();
 
+        User user3 = User.builder()
+                .email("rhkdgh930@naver.com")
+                .username("명광호")
+                .provider(Provider.EMAIL)
+                .status(UserStatus.ACTIVE)
+                .isVerified(true)
+                .password(passwordEncoder.encode("!a12345678"))
+                .build();
+
         Project project = Project.builder()
                 .projectKey("h")
                 .name("hell")
@@ -157,6 +166,7 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
         userRepository.save(user2);
+        userRepository.save(user3);
         projectRepository.save(project);
         userProjectRoleRepository.save(userProjectRole);
 
