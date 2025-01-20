@@ -37,9 +37,12 @@ public enum ErrorCode {
 
     // Invitation Errors
     INVALID_INVITATION(HttpStatus.NOT_FOUND, "INVALID_INVITATION", "유효하지 않은 초대 링크입니다."),
-    LAST_MANAGER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "LAST_MANAGER_CANNOT_LEAVE", "마지막 관리자는 프로젝트를 떠날 수 없습니다."),
+    LAST_MANAGER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "LAST_MANAGER_CANNOT_LEAVE", "마지막 관리자는 프로젝트를 떠날 수 없습니다. 새 관리자를 설정해주세요."),
     NO_MEMBER_TO_ASSIGN(HttpStatus.BAD_REQUEST, "NO_MEMBER_TO_ASSIGN", "지정할 수 있는 멤버가 없습니다."),
-    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "이메일 전송에 실패했습니다.");
+    EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "이메일 전송에 실패했습니다."),
+
+    NEW_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "NEW_MANAGER_REQUIRED", "마지막 관리자는 새 관리자를 설정 하고 탈퇴할 수 있습니다."),
+    NEW_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "NEW_MANAGER_NOT_FOUND", "새 관리자를 설정하지 않았습니다.");
 
     private final HttpStatus httpStatus;
     private final String codeName;
