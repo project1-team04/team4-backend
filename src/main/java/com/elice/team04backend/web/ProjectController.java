@@ -57,7 +57,8 @@ public class ProjectController {
     public ResponseEntity<ProjectResponseDto> postProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ProjectRequestDto projectRequestDto) {
-        ProjectResponseDto projectResponseDto = projectService.postProject(userDetails.getUserId(), projectRequestDto);
+        List<String> emails = projectRequestDto.getEmails();
+        ProjectResponseDto projectResponseDto = projectService.postProject(userDetails.getUserId(), projectRequestDto,emails);
         return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
     }
 
@@ -130,6 +131,14 @@ public class ProjectController {
             @RequestParam Long labelId) {
         labelService.deleteLabel(labelId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/invite")
+    public ResponseEntity inviteMember(@RequestParam String email) {
+
+        String text = projectService.inviteMember(email);
+
+        return ResponseEntity.ok(text);
     }
 
 }
