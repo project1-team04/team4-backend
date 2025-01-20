@@ -27,7 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/api/auth/verify-email",
             "/api/auth/verify",
             "/api/auth/refresh-token",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/api/projects/invite"
     );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
@@ -41,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // AntPathMatcher를 사용하여 패턴 매칭 처리
         AntPathMatcher pathMatcher = new AntPathMatcher();
         return NO_AUTH_PATHS.stream().anyMatch(authPath -> pathMatcher.match(authPath, path)) ||
-                pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/api-docs/**", path);
+                pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/api-docs/**", path) || pathMatcher.match("/api/projects/invite", path);
     }
 
     @Override

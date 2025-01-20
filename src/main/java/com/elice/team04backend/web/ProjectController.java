@@ -133,4 +133,12 @@ public class ProjectController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/invite")
+    public ResponseEntity inviteMember(@RequestParam String email) {
+
+        String text = projectService.inviteMember(email);
+
+        return ResponseEntity.ok(text);
+    }
+
 }

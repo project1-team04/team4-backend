@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private Project savedProject;
 
     @Transactional(readOnly = true)
     @Override
@@ -60,23 +62,23 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto, List<String> emails) {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
-        Project savedProject = projectRepository.save(project);
+        savedProject = projectRepository.save(project);
+
+        UserProjectRole userProjectRole = UserProjectRole.builder()
+                .user(User.builder().id(userId).build())
+                .project(savedProject)
+                .role(Role.MANAGER)
+                .build();
+        userProjectRoleRepository.save(userProjectRole);
 
         if(emails != null || !emails.isEmpty()) {
             for (String email : emails) {
-                if (userRepository.existsByEmail(email)) {
-                    UserProjectRole userProjectRole = UserProjectRole.builder()
-                            .user(User.builder().id(userId).build())
-                            .project(savedProject)
-                            .role(Role.MANAGER)
-                            .build();
-                    userProjectRoleRepository.save(userProjectRole);
-                }
                 String content = "안녕하세요,\n\n" +
                         "귀하를 " + project.getName() + " 프로젝트에 초대합니다.\n\n" +
                         "해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며, " +
-                        "계정이 없으시다면 가입을 하신후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.\n\n" +
-                        "감사합니다.";
+                        "계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.\n\n" +
+                        "감사합니다.\n\n" +
+                        "초대 수락시 링크를 눌러주세요: http://localhost:8080/api/projects/invite?email=" + email;
                 emailService.sendEmail(email, "안녕하세요! 귀하를 초대합니다", content);
             }
         }
@@ -151,4 +153,18 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.deleteById(projectId);
     }
 
+    @Override
+    public String inviteMember(String email) {
+        if (userRepository.existsByEmail(email)) {
+           Optional<User> user = userRepository.findByEmail(email);
+            UserProjectRole userProjectRole = UserProjectRole.builder()
+                    .user(User.builder().id(user.get().getId()).build())
+                    .project(savedProject)
+                    .role(Role.MEMBER)
+                    .build();
+            userProjectRoleRepository.save(userProjectRole);
+            return "성공적으로 프로젝트에 참여하였습니다";
+        }
+        return "해당 이메일을 가입이 되지 않은 이메일 입니다";
+    }
 }

@@ -12,4 +12,5 @@ public interface ProjectService {
     ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto, List<String> emails);
     ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto);
     void deleteProject(Long userId, Long projectId);
+    String inviteMember(String email);
 }
