@@ -16,6 +16,7 @@ import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserProjectRoleRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.AuthService;
+import com.elice.team04backend.service.FirebaseStorageService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,8 +25,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+
+import java.io.IOException;
 
 import static com.elice.team04backend.common.utils.VerificationCodeGenerator.generateVerificationCode;
 
@@ -38,13 +42,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final FirebaseStorageService firebaseStorageService;
     private final RedisDAO redisDAO;
     private final JwtTokenProvider jwtTokenProvider;
 
 
     @Override
     @Transactional
-    public void signUp(SignUpRequestDto signUpRequestDto) {
+    public void signUp(SignUpRequestDto signUpRequestDto, MultipartFile profileImage) {
         // 1. 이메일 인증 확인
         if(!redisDAO.getValues(signUpRequestDto.getEmail()).equals("VERIFIED")) {
             throw new IllegalStateException("이메일 인증이 안됐습니다.");
@@ -55,10 +60,18 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("중복되는 이메일입니다.");
         }
 
+        String profileImageUrl;
+
+        try {
+            profileImageUrl = firebaseStorageService.uploadImage(profileImage);
+        } catch (IOException e) {
+            throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.");
+        }
+
         User signUpUser = User.builder()
                 .email(signUpRequestDto.getEmail())
                 .username(signUpRequestDto.getUsername())
-                .profileImage(signUpRequestDto.getProfileImageUrl())
+                .profileImage(profileImageUrl)
                 .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
                 .isVerified(true)
                 .provider(Provider.EMAIL)
@@ -107,7 +120,7 @@ public class AuthServiceImpl implements AuthService {
         String temporaryPassword = VerificationCodeGenerator.generateVerificationCode();
 
         // 2. 비밀번호 변경
-        User user = userRepository.findByEmail(resetPasswordRequestDto.email()).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다."));
+        User user = userRepository.findByEmailAndStatus(resetPasswordRequestDto.email(), UserStatus.ACTIVE).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다."));
         user.changePassword(passwordEncoder.encode(temporaryPassword));
         userRepository.save(user);
 
