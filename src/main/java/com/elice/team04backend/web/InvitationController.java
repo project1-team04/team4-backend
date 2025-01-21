@@ -26,11 +26,12 @@ public class InvitationController {
         String htmlResponse = """
         <html>
             <head>
-                <title>Invitation Accepted</title>
+                <meta charset="UTF-8">
+                <title>초대 수락</title>
             </head>
             <body>
-                <h1>Invitation Accepted</h1>
-                <p>You have successfully joined the project!</p>
+                <h1>프로젝트에 참여하신걸 환영합니다.</h1>
+                <p>성공적으로 프로젝트에 참여하셨습니다.</p>
             </body>
         </html>
         """;

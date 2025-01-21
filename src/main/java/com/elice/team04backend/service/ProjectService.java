@@ -14,7 +14,8 @@ public interface ProjectService {
     void deleteProject(Long userId, Long projectId);
 
     // 초대 관련
-    void inviteUserToProject(Long managerId, Long projectId, String email);
+    void inviteUsers(Long projectId, List<String> emails);
     void acceptInvitation(String token);
     void leaveProject(Long userId, Long projectId, Long newManagerId);
+    void assignManager(Long currentManagerId, Long projectId, Long newManagerId);
 }

@@ -7,6 +7,7 @@ import com.elice.team04backend.dto.label.LabelUpdateDto;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.ProjectInviteRequestDto;
 import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +16,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -135,20 +135,16 @@ public class ProjectController {
 
     // 초대 및 탈퇴 관련 컨트롤러
 
-    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트 매니저가 유저를 초대합니다.")
+    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
     @PostMapping("/invite")
-    @PreAuthorize("hasRole('MANAGER')")
-    public ResponseEntity<Void> inviteUserToProject(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ResponseEntity<Void> inviteUsers(
             @RequestParam Long projectId,
-            @RequestParam String email) {
-        projectService.inviteUserToProject(userDetails.getUserId(), projectId, email);
+            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
         return ResponseEntity.ok().build();
     }
 
-    /**TODO
-     * Manager 탈퇴 관련 기능 구현
-     */
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")
     public ResponseEntity<Void> leaveProject(
@@ -157,6 +153,17 @@ public class ProjectController {
             @RequestParam(required = false) Long newManagerId) {
         projectService.leaveProject(userDetails.getUserId(), projectId, newManagerId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "프로젝트 관리자를 변경", description = "MANAGER가 특정 유저에게 MANAGER 권한을 부여합니다.")
+    @PreAuthorize("hasRole('MANAGER')")
+    @PatchMapping("/assign-manager")
+    public ResponseEntity<Void> assignManager(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId,
+            @RequestParam Long newManagerId) {
+        projectService.assignManager(userDetails.getUserId(), projectId, newManagerId);
+        return ResponseEntity.ok().build();
     }
 
 }
