@@ -38,7 +38,6 @@ public class Label extends BaseEntity {
     @Column(name = "hexcode", nullable = false, length = 7)
     private String hexCode;
 
-    @Builder.Default
     @OneToMany(mappedBy = "label", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
 
