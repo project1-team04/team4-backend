@@ -35,15 +35,12 @@ public class Project extends BaseEntity {
     @Column(name = "issue_count", nullable = false)
     private Long issueCount;
 
-    @Builder.Default
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<UserProjectRole> userProjectRoles = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Issue> issues = new ArrayList<>();
 
-    @Builder.Default
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Label> labels = new ArrayList<>();
 

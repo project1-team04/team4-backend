@@ -2,10 +2,8 @@ package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.common.entity.BaseEntity;
-import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
-import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +13,6 @@ import org.hibernate.envers.AuditOverride;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -58,7 +55,6 @@ public class Issue extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
 
-    @Builder.Default
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueImage> issueImages = new ArrayList<>();
 

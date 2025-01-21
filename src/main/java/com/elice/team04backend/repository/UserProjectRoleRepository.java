@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface UserProjectRoleRepository extends JpaRepository<UserProjectRole, Long> {
     Optional<UserProjectRole> findByUserIdAndProjectId(Long userId, Long projectId);
     List<UserProjectRole> findAllByProjectId(Long projectId);
+    boolean existsByUserIdAndProjectId(Long userId, Long projectId);
 }

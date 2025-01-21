@@ -17,4 +17,5 @@ public interface ProjectService {
     void inviteUserToProject(Long managerId, Long projectId, String email);
     void acceptInvitation(String token);
     void leaveProject(Long userId, Long projectId, Long newManagerId);
+    void assignManager(Long currentManagerId, Long projectId, Long newManagerId);
 }

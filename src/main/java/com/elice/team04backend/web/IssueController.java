@@ -4,7 +4,6 @@ import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
-import com.elice.team04backend.service.FirebaseStorageService;
 import com.elice.team04backend.service.IssueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +25,6 @@ import java.util.List;
 public class IssueController {
 
     private final IssueService issueService;
-    private final FirebaseStorageService firebaseStorageService;
 
     @Operation(summary = "이슈 생성", description = "이슈를 생성하는 기능입니다.")
     @PostMapping
