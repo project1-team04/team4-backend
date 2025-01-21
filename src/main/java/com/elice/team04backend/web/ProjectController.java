@@ -146,9 +146,6 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 
-    /**TODO
-     * Manager 탈퇴 관련 기능 구현
-     */
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")
     public ResponseEntity<Void> leaveProject(
@@ -157,6 +154,17 @@ public class ProjectController {
             @RequestParam(required = false) Long newManagerId) {
         projectService.leaveProject(userDetails.getUserId(), projectId, newManagerId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "프로젝트 관리자를 변경", description = "MANAGER가 특정 유저에게 MANAGER 권한을 부여합니다.")
+    @PreAuthorize("hasRole('MANAGER')")
+    @PatchMapping("/assign-manager")
+    public ResponseEntity<Void> assignManager(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId,
+            @RequestParam Long newManagerId) {
+        projectService.assignManager(userDetails.getUserId(), projectId, newManagerId);
+        return ResponseEntity.ok().build();
     }
 
 }
