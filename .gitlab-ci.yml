@@ -33,7 +33,6 @@ build:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
     - cp /home/kdt/application-dev.yml src/main/resources/application-dev.yml
-    - cp /home/kdt/serviceAccountKey.json src/main/resources/serviceAccountKey.json
     - ls -l $(dirname $APP_CONFIG_PATH)
     - echo "Building the application"
     - ./gradlew clean build --quiet
