@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface InvitationRepository extends JpaRepository<Invitation, Long> {
     Optional<Invitation> findByToken(String token);
+    boolean existsByUserIdAndProjectId(Long userId, Long projectId);
     void deleteById(Long id);
 }
