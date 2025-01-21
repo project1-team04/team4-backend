@@ -5,6 +5,7 @@ import com.elice.team04backend.common.filter.JwtLoginAuthenticationFilter;
 import com.elice.team04backend.common.filter.ProjectRoleAuthorizationFilter;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
+import com.elice.team04backend.common.utils.UrlUtils;
 import com.elice.team04backend.service.UserProjectRoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -45,14 +46,7 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/verify-email").permitAll()
-                            .requestMatchers("/api/auth/verify").permitAll()
-                            .requestMatchers("/api/auth/signup").permitAll()
-                            .requestMatchers("/api/auth/login").permitAll()
-                            .requestMatchers("/api/auth/refresh-token").permitAll()
-                            .requestMatchers("/swagger-ui/**").permitAll()
-                            .requestMatchers("/api-docs/**").permitAll()
-                            .requestMatchers("/api/accept/**").permitAll()
+                        auth.requestMatchers(UrlUtils.PermittedUrl).permitAll()
                             .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtLoginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
