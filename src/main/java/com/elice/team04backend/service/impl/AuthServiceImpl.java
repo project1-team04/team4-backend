@@ -85,19 +85,27 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void logout(Long userId, HttpServletRequest request, HttpServletResponse response) {
         // 1. AccessToken 블랙리스트 등록
-        String accessToken = jwtTokenProvider.resolveAccessToken(request);
-        redisDAO.setValues(accessToken, "logout", jwtTokenProvider.getAccessTokenExpiration());
+        invalidateAccessToken(request);
 
         // 2. RefreshToken 쿠키 만료 시키기
+        invalidateRefreshToken(response);
+
+        // 3. RefreshToken User 테이블에서 삭제
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+        user.removeRefreshToken();
+    }
+
+    private void invalidateAccessToken(HttpServletRequest request) {
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        redisDAO.setValues(accessToken, "logout", jwtTokenProvider.getAccessTokenExpiration());
+    }
+
+    private static void invalidateRefreshToken(HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(0); // 즉시 만료
         response.addCookie(refreshTokenCookie); // 클라이언트에 삭제 요청
-
-        // 3. RefreshToken User 테이블에서 삭제
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
-        user.removeRefreshToken();
     }
 
     @Override
@@ -140,6 +148,21 @@ public class AuthServiceImpl implements AuthService {
 
         // 3. 비밀번호 변경
         user.changePassword(passwordEncoder.encode(changePasswordRequestDto.newPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deactivateAccount(Long userId, HttpServletRequest request, HttpServletResponse response) {
+        // 1. 유저 찾기
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다"));
+
+        // 2. 로그아웃 (토큰 비활성화)
+        invalidateAccessToken(request);
+        invalidateRefreshToken(response);
+        user.removeRefreshToken();
+
+        // 3. 유저 계정 비활성화
+        user.deactivateAccount();
         userRepository.save(user);
     }
 

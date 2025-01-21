@@ -103,4 +103,11 @@ public class AuthController {
         authService.logout(userDetails.getUserId(), request, response);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "회원 탈퇴", description = "서비스 회원 탈퇴를 진행합니다. (DB에서 실제 회원 정보가 삭제되지는 않습니다")
+    @PostMapping("/deactivate")
+    public ResponseEntity<?> deactivateAccount(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request, HttpServletResponse response) {
+        authService.deactivateAccount(userDetails.getUserId(), request, response);
+        return ResponseEntity.ok().build();
+    }
 }

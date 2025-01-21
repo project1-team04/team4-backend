@@ -24,7 +24,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "프로필 조회", description = "이메일, 사용자명, 프로필이미지를 조회합니다.")
+    @Operation(summary = "내 프로필 조회", description = "이메일, 사용자명, 프로필이미지를 조회합니다.")
     @GetMapping("/profile")
     public ResponseEntity<GetProfileResponseDto> getProfile(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 

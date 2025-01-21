@@ -17,4 +17,6 @@ public interface AuthService {
 
     void resetPassword(ResetPasswordRequestDto resetPasswordRequestDto);
     void changePassword(Long userId, ChangePasswordRequestDto changePasswordRequestDto);
+
+    void deactivateAccount(Long userId, HttpServletRequest request, HttpServletResponse response);
 }

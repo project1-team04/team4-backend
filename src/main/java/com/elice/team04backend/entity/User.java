@@ -83,4 +83,8 @@ public class User extends BaseEntity {
         this.username = username;
         this.profileImage = profileImageUrl;
     }
+
+    public void deactivateAccount() {
+        this.status = UserStatus.DELETED;
+    }
 }
