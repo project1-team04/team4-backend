@@ -13,12 +13,6 @@ java {
     }
 }
 
-processResources {
-    from("src/main/resources") {
-        include "serviceAccountKey.json"
-    }
-}
-
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
