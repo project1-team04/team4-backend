@@ -1,8 +1,6 @@
 package com.elice.team04backend.service;
 
-import com.elice.team04backend.common.dto.request.SignUpRequestDto;
-import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
-import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
+import com.elice.team04backend.common.dto.request.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -15,4 +13,7 @@ public interface AuthService {
     void logout(Long userId, HttpServletRequest request, HttpServletResponse response);
 
     String refreshAccessToken(String refreshToken);
+
+    void resetPassword(ResetPasswordRequestDto resetPasswordRequestDto);
+    void changePassword(Long userId, ChangePasswordRequestDto changePasswordRequestDto);
 }

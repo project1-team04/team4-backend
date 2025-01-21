@@ -3,13 +3,12 @@ package com.elice.team04backend.service.impl;
 import com.elice.team04backend.common.constant.Provider;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.constant.UserStatus;
-import com.elice.team04backend.common.dto.request.SignUpRequestDto;
+import com.elice.team04backend.common.dto.request.*;
 import com.elice.team04backend.common.model.RedisDAO;
 import com.elice.team04backend.common.service.EmailService;
-import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
-import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
+import com.elice.team04backend.common.utils.VerificationCodeGenerator;
 import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.entity.UserProjectRole;
@@ -100,6 +99,35 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return jwtTokenProvider.generateAccessToken(user.getEmail(), user.getId());
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequestDto resetPasswordRequestDto) {
+        // 1. 임시 비밀번호 생성
+        String temporaryPassword = VerificationCodeGenerator.generateVerificationCode();
+
+        // 2. 비밀번호 변경
+        User user = userRepository.findByEmail(resetPasswordRequestDto.email()).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다."));
+        user.changePassword(passwordEncoder.encode(temporaryPassword));
+        userRepository.save(user);
+
+        // 3. 이메일 전송
+        emailService.sendEmail(resetPasswordRequestDto.email(), "Threadly 임시 비밀번호입니다.", temporaryPassword);
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordRequestDto changePasswordRequestDto) {
+        // 1. 유저 찾기
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다"));
+
+        // 2. 비밀번호 비교
+        if(!passwordEncoder.matches(changePasswordRequestDto.oldPassword(), user.getPassword())){
+            throw new IllegalStateException("잘못된 비밀번호입니다.");
+        }
+
+        // 3. 비밀번호 변경
+        user.changePassword(passwordEncoder.encode(changePasswordRequestDto.newPassword()));
+        userRepository.save(user);
     }
 
     @Override

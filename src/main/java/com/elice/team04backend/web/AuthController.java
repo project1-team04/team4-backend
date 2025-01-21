@@ -1,10 +1,8 @@
 package com.elice.team04backend.web;
 
-import com.elice.team04backend.common.dto.request.SignUpRequestDto;
+import com.elice.team04backend.common.dto.request.*;
 import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.common.dto.response.AccessTokenResponseDto;
-import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
-import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
 import com.elice.team04backend.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,6 +36,20 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<?> confirmVerificationCode(@RequestBody @Valid ConfirmEmailRequestDto confirmEmailRequestDto) {
         authService.confirmVerificationCode(confirmEmailRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "비밀번호 찾기(임시 비밀번호) 요청", description = "이메일을 입력하고 해당 이메일로 임시 비밀번호를 전송합니다.")
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequestDto resetPasswordRequestDto) {
+        authService.resetPassword(resetPasswordRequestDto);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "비밀번호 변경 요청", description = "이전 비밀번호를 검증하여 새로운 비밀번호로 변경합니다.")
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody @Valid ChangePasswordRequestDto changePasswordRequestDto) {
+        authService.changePassword(userDetails.getUserId(), changePasswordRequestDto);
         return ResponseEntity.ok().build();
     }
 
