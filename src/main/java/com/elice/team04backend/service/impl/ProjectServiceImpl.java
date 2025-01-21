@@ -71,10 +71,10 @@ public class ProjectServiceImpl implements ProjectService {
 
     private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
         UserProjectRole userProjectRole = UserProjectRole.builder()
-                        .user(User.builder().id(userId).build())
-                        .project(savedProject)
-                        .role(Role.MANAGER)
-                        .build();
+                .user(User.builder().id(userId).build())
+                .project(savedProject)
+                .role(Role.MANAGER)
+                .build();
         return userProjectRole;
     }
 
@@ -194,41 +194,50 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void inviteUserToProject(Long managerId, Long projectId, String email) {
-        UserProjectRole managerRole = userProjectRoleRepository.findByUserIdAndProjectId(managerId, projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+    public void inviteUsers(Long projectId, List<String> emails) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
 
-        if (managerRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
+        for (String email : emails) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+                throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
+            }
+
+            if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+                throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
+            }
+
+            String token = UUID.randomUUID().toString();
+            Invitation invitation = Invitation.builder()
+                    .user(user)
+                    .project(project)
+                    .token(token)
+                    .build();
+            invitationRepository.save(invitation);
+
+            sendInvitationEmail(project.getName(), email, token);
         }
-
-        User invitedUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-        String token = UUID.randomUUID().toString();
-        Invitation invitation = Invitation.builder()
-                .user(invitedUser)
-                .project(managerRole.getProject())
-                .token(token)
-                .build();
-        invitationRepository.save(invitation);
-
-        sendInvitationEmail(email, token);
     }
 
-
-
-    private void sendInvitationEmail(String email, String token) {
+    private void sendInvitationEmail(String projectName, String email, String token) {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
         String content = String.format(
-                "<p>You have been invited to join a project.</p>" +
-                        "<p>Click the link below to accept the invitation:</p>" +
-                        "<a href=\"%s\">Accept Invitation</a>", invitationLink);
+                        "<p>안녕하세요,</p>" +
+                        "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
+                        "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
+                        "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +
+                        "<p>감사합니다.</p>" +
+                        "<p>아래 링크를 클릭하여 초대를 수락하세요:</p>" +
+                        "<a href=\"%s\">Accept Invitation</a>",
+                projectName, invitationLink);
 
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             helper.setTo(email);
             helper.setSubject(subject);
             helper.setText(content, true);
