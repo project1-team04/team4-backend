@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("만료된 토큰입니다.");
         }
 
-        return jwtTokenProvider.generateAccessToken(user.getEmail(), user.getId());
+        return jwtTokenProvider.generateAccessToken(user.getEmail(), user.getId(), user.getUsername());
     }
 
     @Override
