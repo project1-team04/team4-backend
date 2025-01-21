@@ -16,6 +16,8 @@ public enum ErrorCode {
     // User Errors
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "해당 유저를 찾을 수 없습니다."),
     USER_CREATE_FAILED(HttpStatus.BAD_REQUEST, "USER_CREATE_FAILED", "유저 생성 과정에서 오류가 발생했습니다."),
+    USER_ALREADY_IN_PROJECT(HttpStatus.CONFLICT, "USER_ALREADY_IN_PROJECT","이미 프로젝트에 속해있는 유저입니다."),
+    USER_ALREADY_INVITED(HttpStatus.CONFLICT, "USER_ALREADY_INVITED", "이미 프로젝트에 초대 된 유저입니다."),
 
     // Project Errors
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT_NOT_FOUND", "해당 프로젝트를 찾을 수 없습니다."),
