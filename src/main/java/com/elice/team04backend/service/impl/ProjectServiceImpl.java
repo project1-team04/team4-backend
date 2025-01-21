@@ -23,10 +23,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -133,7 +130,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
+    public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto, List<String> emails) {
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
@@ -143,6 +140,28 @@ public class ProjectServiceImpl implements ProjectService {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+
+        List<UserProjectRole> userProjectRoleList = userProjectRoleRepository.findAllByProjectId(projectId);
+        List<String>existEmails = new ArrayList<>();
+        for(int index = 0; index < userProjectRoleList.size(); index++){
+            UserProjectRole getUser = userProjectRoleList.get(index);
+            existEmails.add(getUser.getUser().getEmail());
+        }
+
+        if (emails != null && !emails.isEmpty()) {
+            for (String email : emails) {
+                boolean isEmailExists = false;
+                for (String existsEmail : existEmails) {
+                    if (email.equals(existsEmail)) {
+                        isEmailExists = true;
+                        break;
+                    }
+                }
+                if (!isEmailExists) {
+                    sendInvitationEmail(project.getName(), email);
+                }
+            }
+        }
 
         project.update(projectUpdateDto);
         Project updatedProject = projectRepository.save(project);

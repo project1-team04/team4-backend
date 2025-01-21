@@ -10,7 +10,7 @@ public interface ProjectService {
     List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size);
     ProjectResponseDto getProjectById(Long projectId);
     ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto, List<String> emails);
-    ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto);
+    ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto, List<String> emails);
     void deleteProject(Long userId, Long projectId);
 
     void leaveProject(Long userId, Long projectId, Long newManagerId);

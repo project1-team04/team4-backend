@@ -63,8 +63,6 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectResponseDto);
     }
 
-
-
     @Operation(summary = "단일 프로젝트 조회", description = "프로젝트 id로 단일 프로젝트를 조회합니다.")
     @GetMapping("/details")
     public ResponseEntity<ProjectResponseDto> getProjectDetails(
@@ -74,14 +72,14 @@ public class ProjectController {
         return ResponseEntity.ok(projectResponseDto);
     }
 
-    @Operation(summary = "단일 프로젝트 수정", description = "단일 프로젝트를 수정합니다.")
+    @Operation(summary = "단일 프로젝트 수정", description = "단일 프로젝트를 수정합니다. 인원 추가도 가능합니다.")
     @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping
     public ResponseEntity<ProjectResponseDto> patchProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam Long projectId,
             @Valid @RequestBody ProjectUpdateDto projectUpdateDto) {
-        ProjectResponseDto projectResponseDto = projectService.patchProject(userDetails.getUserId(), projectId, projectUpdateDto);
+        ProjectResponseDto projectResponseDto = projectService.patchProject(userDetails.getUserId(), projectId, projectUpdateDto, projectUpdateDto.getEmails());
         return ResponseEntity.ok(projectResponseDto);
     }
 
