@@ -2,6 +2,7 @@ package com.elice.team04backend.entity;
 
 import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.common.entity.BaseEntity;
+import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
 import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
@@ -37,8 +38,7 @@ public class Issue extends BaseEntity {
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "assignee_user_id", nullable = false)
-    @JoinColumn(name = "assignee_user_id")
+    @JoinColumn(name = "assignee_user_id", nullable = false)
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,12 +58,17 @@ public class Issue extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
 
+    @Builder.Default
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueImage> issueImages = new ArrayList<>();
 
     public void update(IssueUpdateDto issueUpdateDto) {
         this.description = issueUpdateDto.getDescription();
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
+    }
+
+    public void updateIssueKey(String issueKey) {
+        this.issueKey = issueKey;
     }
 
     public void addIssueImages(IssueImage issueImage) {
@@ -79,7 +84,7 @@ public class Issue extends BaseEntity {
                 .id(String.valueOf(this.id))
                 .projectId(this.getProject().getId())
                 .labelId(this.getLabel().getId())
-                //.assigneeUserId(this.getAssignee().getId())
+                .assigneeUserId(this.getAssignee().getId())
                 .reporterUserId(this.getReporter().getId())
                 .issueKey(this.getIssueKey())
                 .description(this.getDescription())

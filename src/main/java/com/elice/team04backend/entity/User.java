@@ -59,9 +59,11 @@ public class User extends BaseEntity {
     @Column(name = "refreshToken")
     private String refreshToken;
 
+    @Builder.Default
     @OneToMany(mappedBy = "assignee")
     private List<Issue> assigneeIssues = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reporter")
     private List<Issue> reporterIssues = new ArrayList<>();
 
