@@ -32,14 +32,12 @@ build:
   script:
     - rm -rf /home/gitlab-runner/app
     - mkdir -p /home/gitlab-runner/app
-    - cp /home/kdt/serviceAccountKey.json src/main/resources/serviceAccountKey.json
     - cp /home/kdt/application-dev.yml src/main/resources/application-dev.yml
     - ls -l $(dirname $APP_CONFIG_PATH)
     - echo "Building the application"
     - ./gradlew clean build --quiet
     - echo "Starting deployment"
     - cp build/libs/team04-backend-0.0.1-SNAPSHOT.jar /home/gitlab-runner/app/demo.jar
-    - jar tf build/libs/team04-backend-0.0.1-SNAPSHOT.jar | grep serviceAccountKey.json
   only:
     - main
 
