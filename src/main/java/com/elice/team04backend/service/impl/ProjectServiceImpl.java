@@ -3,27 +3,26 @@ package com.elice.team04backend.service.impl;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
-import com.elice.team04backend.common.service.EmailService;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
 import com.elice.team04backend.service.ProjectService;
-import com.elice.team04backend.service.UserProjectRoleService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +35,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
     private final JavaMailSender mailSender;
-    private final EmailService emailService;
-    private Project savedProject;
+    private final IssueRepository issueRepository;
 
     @Transactional(readOnly = true)
     @Override
@@ -58,35 +56,25 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto, List<String> emails) {
+    public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
         String projectKey = generatedProjectKey(projectRequestDto);
         Project project = projectRequestDto.from(projectKey);
-        savedProject = projectRepository.save(project);
 
+        Project savedProject = projectRepository.save(project);
+        createDefaultLabels(savedProject);
+
+        UserProjectRole userProjectRole = setUserAsManager(userId, savedProject);
+        userProjectRoleRepository.save(userProjectRole);
+
+        return savedProject.from();
+    }
+
+    private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
         UserProjectRole userProjectRole = UserProjectRole.builder()
                 .user(User.builder().id(userId).build())
                 .project(savedProject)
                 .role(Role.MANAGER)
                 .build();
-        userProjectRoleRepository.save(userProjectRole);
-
-        if(emails != null || !emails.isEmpty()) {
-            for (String email : emails) {
-                sendInvitationEmail(project.getName(), email);
-            }
-        }
-        createDefaultLabels(savedProject);
-
-        return savedProject.from();
-    }
-
-
-    private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
-        UserProjectRole userProjectRole = UserProjectRole.builder()
-                        .user(User.builder().id(userId).build())
-                        .project(savedProject)
-                        .role(Role.MANAGER)
-                        .build();
         return userProjectRole;
     }
 
@@ -111,7 +99,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         if (sb.isEmpty()) {
-            throw new CustomException(ErrorCode.KEY_CREATE_FAILED);
+            throw new CustomException(ErrorCode.PROJECT_KEY_CREATE_FAILED);
         }
 
         String baseKey = sb.toString();
@@ -122,7 +110,7 @@ public class ProjectServiceImpl implements ProjectService {
             char randomChar = (char) ('A' + (int) (Math.random() * 26));
             projectKey = baseKey + randomChar;
             if (attempt++ > 10) {
-                throw new CustomException(ErrorCode.KEY_CREATE_FAILED);
+                throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
             }
         }
 
@@ -130,42 +118,64 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto, List<String> emails) {
+    public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
+
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
         if (userProjectRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
         }
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
 
-        List<UserProjectRole> userProjectRoleList = userProjectRoleRepository.findAllByProjectId(projectId);
-        List<String>existEmails = new ArrayList<>();
-        for(int index = 0; index < userProjectRoleList.size(); index++){
-            UserProjectRole getUser = userProjectRoleList.get(index);
-            existEmails.add(getUser.getUser().getEmail());
+        String oldProjectKey = project.getProjectKey();
+        String newProjectKey = updateProjectKey(projectUpdateDto);
+
+        project.update(projectUpdateDto);
+
+        project.updateProjectKey(newProjectKey);
+        if (project.getIssueCount() != 0) {
+            updateIssueKeys(project, oldProjectKey, newProjectKey);
         }
 
-        if (emails != null && !emails.isEmpty()) {
-            for (String email : emails) {
-                boolean isEmailExists = false;
-                for (String existsEmail : existEmails) {
-                    if (email.equals(existsEmail)) {
-                        isEmailExists = true;
-                        break;
-                    }
-                }
-                if (!isEmailExists) {
-                    sendInvitationEmail(project.getName(), email);
-                }
+        Project updatedProject = projectRepository.save(project);
+        return updatedProject.from();
+    }
+
+    private String updateProjectKey(ProjectUpdateDto projectUpdateDto) {
+        StringBuilder sb = new StringBuilder();
+        String[] words = projectUpdateDto.getName().toUpperCase().split(" ");
+
+        for (String word : words) {
+            char firstChar = word.charAt(0);
+            if (Character.isLetter(firstChar)) {
+                sb.append(firstChar);
             }
         }
 
-        project.update(projectUpdateDto);
-        Project updatedProject = projectRepository.save(project);
-        return updatedProject.from();
+        if (sb.isEmpty()) {
+            throw new CustomException(ErrorCode.PROJECT_KEY_CREATE_FAILED);
+        }
+
+        String baseKey = sb.toString();
+        String projectKey = baseKey;
+        int attempt = 1;
+
+        while (projectRepository.existsByProjectKey(projectKey)) {
+            char randomChar = (char) ('A' + (int) (Math.random() * 26));
+            projectKey = baseKey + randomChar;
+            if (attempt++ > 10) {
+                throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
+            }
+        }
+
+        return projectKey;
+    }
+
+    private void updateIssueKeys(Project project, String oldProjectKey, String newProjectKey) {
+        issueRepository.bulkUpdateIssueKeys(project.getId(), oldProjectKey, newProjectKey);
     }
 
     @Override
@@ -174,19 +184,74 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
         if (userProjectRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.PERMISSION_DENIED);
+            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
         }
         projectRepository.deleteById(projectId);
     }
 
-        private void sendInvitationEmail(String projectName,String email) {
-            String content = "안녕하세요,\n\n" +
-                    "귀하를 " + projectName + " 프로젝트에 초대합니다.\n\n" +
-                    "해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며, " +
-                    "계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.\n\n" +
-                    "감사합니다.\n\n" +
-                    "초대 수락시 링크를 눌러주세요: http://localhost:8080/api/accept/invite?email=" + email;
-            emailService.sendEmail(email, "안녕하세요! 귀하를 초대합니다", content);
+    @Override
+    public void inviteUsers(Long projectId, List<String> emails) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+
+        for (String email : emails) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+            if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+                throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
+            }
+
+            if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+                throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
+            }
+
+            String token = UUID.randomUUID().toString();
+            Invitation invitation = Invitation.builder()
+                    .user(user)
+                    .project(project)
+                    .token(token)
+                    .build();
+            invitationRepository.save(invitation);
+
+            sendInvitationEmail(project.getName(), email, token);
+        }
+    }
+
+    private void sendInvitationEmail(String projectName, String email, String token) {
+        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
+        String subject = "Project Invitation";
+        String content = String.format(
+                        "<p>안녕하세요,</p>" +
+                        "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
+                        "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
+                        "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +
+                        "<p>감사합니다.</p>" +
+                        "<p>아래 링크를 클릭하여 초대를 수락하세요:</p>" +
+                        "<a href=\"%s\">Accept Invitation</a>",
+                projectName, invitationLink);
+
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject(subject);
+            helper.setText(content, true);
+            mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
+        }
+    }
+
+    @Override
+    public void acceptInvitation(String token) {
+        Invitation invitation = invitationRepository.findByToken(token)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITATION));
+
+        UserProjectRole newMember = setUserAsMember(invitation);
+        userProjectRoleRepository.save(newMember);
+
+        invitationRepository.deleteById(invitation.getId());
     }
 
     private static UserProjectRole setUserAsMember(Invitation invitation) {
@@ -213,12 +278,12 @@ public class ProjectServiceImpl implements ProjectService {
     private void handleManagerLeaving(Long userId, Long projectId, Long newManagerId) {
         List<UserProjectRole> members = userProjectRoleRepository.findAllByProjectId(projectId);
 
-        if (members.size() <= 1) {
-            throw new CustomException(ErrorCode.LAST_MANAGER_CANNOT_LEAVE);
-        }
-
         if (newManagerId == null) {
             throw new CustomException(ErrorCode.NEW_MANAGER_REQUIRED);
+        }
+
+        if (members.size() <= 1) {
+            throw new CustomException(ErrorCode.LAST_MANAGER_CANNOT_LEAVE);
         }
 
         UserProjectRole newManager = members.stream()
@@ -231,18 +296,22 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public String inviteMember(String email) {
-        if (userRepository.existsByEmail(email)) {
-            Optional<User> user = userRepository.findByEmail(email);
-            UserProjectRole userProjectRole = UserProjectRole.builder()
-                    .user(User.builder().id(user.get().getId()).build())
-                    .project(savedProject)
-                    .role(Role.MEMBER)
-                    .build();
-            userProjectRoleRepository.save(userProjectRole);
-            return "성공적으로 프로젝트에 참여하였습니다";
+    public void assignManager(Long currentManagerId, Long projectId, Long newManagerId) {
+        UserProjectRole currentManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(currentManagerId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (currentManagerRole.getRole() != Role.MANAGER) {
+            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
         }
-        return "해당 이메일은 가입이 되지 않은 이메일 입니다";
+
+        UserProjectRole newManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(newManagerId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NEW_MANAGER_NOT_FOUND));
+
+        newManagerRole.setRole(Role.MANAGER);
+        currentManagerRole.setRole(Role.MEMBER);
+
+        userProjectRoleRepository.save(currentManagerRole);
+        userProjectRoleRepository.save(newManagerRole);
     }
 
 }
