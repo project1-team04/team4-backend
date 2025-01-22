@@ -45,11 +45,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         // 채팅 메시지 저장
         chatMessageRepository.save(messageVo);
 
-        // 이슈 ID를 통해 해당 이슈에 연결된 세션들 찾기
-        int issueId = Integer.parseInt(messageVo.getIssueId());
-        Set<WebSocketSession> sessions = sessionsByIssue.computeIfAbsent(issueId, k -> new HashSet<>());
-
-        System.out.println("브로드캐스트할 세션들: " + sessions.size() + "개 세션");
+        Set<WebSocketSession> sessions = sessionsByIssue.computeIfAbsent(messageVo.getIssueId(), k -> new HashSet<>());
 
         // 해당 이슈에 연결된 클라이언트들에게 메시지 브로드캐스트
         for (WebSocketSession webSocketSession : sessions) {
