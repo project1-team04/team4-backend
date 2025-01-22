@@ -8,8 +8,10 @@ import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.dto.project.ProjectInviteRequestDto;
+import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
+import com.elice.team04backend.service.UserProjectRoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +34,7 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final LabelService labelService;
+    private final UserProjectRoleService userProjectRoleService;
 
 
     @PreAuthorize("hasRole('MANAGER')")
@@ -52,6 +55,14 @@ public class ProjectController {
         List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
         return ResponseEntity.ok(projectResponseDtos);
     }
+
+    @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
+    @GetMapping("/users")
+    public ResponseEntity<List<UserProjectRoleResponseDto>> getUsersByProject(@RequestParam Long projectId) {
+        List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
+        return ResponseEntity.ok(users);
+    }
+
 
     @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성합니다.")
     @PostMapping

@@ -23,6 +23,7 @@ public enum ErrorCode {
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT_NOT_FOUND", "해당 프로젝트를 찾을 수 없습니다."),
     PROJECT_CREATE_FAILED(HttpStatus.BAD_REQUEST, "PROJECT_CREATE_FAILED", "프로젝트 생성에 실패했습니다. 요청 정보를 확인해주세요."),
     USER_NOT_IN_PROJECT(HttpStatus.FORBIDDEN, "USER_NOT_IN_PROJECT", "해당 유저는 프로젝트에 속해 있지 않습니다."),
+    PROJECT_USERS_NOT_FOUND(HttpStatus.NOT_FOUND,"PROJECT_USERS_NOT_FOUND","해당 프로젝트에 연관된 유저가 없습니다."),
 
     // Issue Errors
     ISSUE_NOT_FOUND(HttpStatus.NOT_FOUND, "ISSUE_NOT_FOUND", "해당 이슈를 찾을 수 없습니다."),
