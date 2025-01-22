@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class InvitationController {
     private final ProjectService projectService;
 
+    @Operation(summary = "프로젝트 참여에 수락시에 진행되는 api 입니다. 이메일을 넣어주면 해당 이메일이 프로젝트에 추가됩니다", security = {} )
     @GetMapping("/invite")
     public ResponseEntity inviteMember(@RequestParam String email) {
 
