@@ -136,7 +136,9 @@ public class ProjectServiceImpl implements ProjectService {
         project.update(projectUpdateDto);
 
         project.updateProjectKey(newProjectKey);
-        updateIssueKeys(project, oldProjectKey, newProjectKey);
+        if (project.getIssueCount() != 0) {
+            updateIssueKeys(project, oldProjectKey, newProjectKey);
+        }
 
         Project updatedProject = projectRepository.save(project);
         return updatedProject.from();
@@ -173,13 +175,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private void updateIssueKeys(Project project, String oldProjectKey, String newProjectKey) {
-        List<Issue> issues = issueRepository.findByProjectId(project.getId());
-
-        for (Issue issue : issues) {
-            String updatedIssueKey = issue.getIssueKey().replace(oldProjectKey, newProjectKey);
-            issue.updateIssueKey(updatedIssueKey);
-            issueRepository.save(issue);
-        }
+        issueRepository.bulkUpdateIssueKeys(project.getId(), oldProjectKey, newProjectKey);
     }
 
     @Override
