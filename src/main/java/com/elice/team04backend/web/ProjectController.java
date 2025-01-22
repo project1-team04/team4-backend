@@ -58,7 +58,9 @@ public class ProjectController {
 
     @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
     @GetMapping("/users")
-    public ResponseEntity<List<UserProjectRoleResponseDto>> getUsersByProject(@RequestParam Long projectId) {
+    public ResponseEntity<List<UserProjectRoleResponseDto>> getUsersByProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam Long projectId) {
         List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
         return ResponseEntity.ok(users);
     }

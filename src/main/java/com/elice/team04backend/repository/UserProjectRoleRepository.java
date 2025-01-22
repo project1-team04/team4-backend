@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserProjectRoleRepository extends JpaRepository<UserProjectRole, Long> {
 
-    @Query("SELECT DISTINCT upr FROM UserProjectRole upr " +
+    @Query( "SELECT DISTINCT upr FROM UserProjectRole upr " +
             "JOIN FETCH upr.user u " +
             "JOIN FETCH upr.project p " +
             "WHERE u.id = :userId AND p.id = :projectId")
@@ -21,6 +21,9 @@ public interface UserProjectRoleRepository extends JpaRepository<UserProjectRole
             @Param("projectId") Long projectId);
 
     //Optional<UserProjectRole> findByUserIdAndProjectId(Long userId, Long projectId);
-    List<UserProjectRole> findAllByProjectId(Long projectId);
+    @Query( "SELECT upr FROM UserProjectRole upr " +
+            "JOIN FETCH upr.user " +
+            "WHERE upr.project.id = :projectId")
+    List<UserProjectRole> findAllByProjectId(@Param("projectId") Long projectId);
     boolean existsByUserIdAndProjectId(Long userId, Long projectId);
 }
