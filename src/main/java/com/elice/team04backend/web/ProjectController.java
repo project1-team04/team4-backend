@@ -8,6 +8,7 @@ import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.dto.project.ProjectInviteRequestDto;
+import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
@@ -45,6 +46,18 @@ public class ProjectController {
         log.info("{}",userDetails.getUserId());
         return ResponseEntity.ok().build();
     }
+    @Operation(summary = "로그인 유저와 관련된 프로젝트 조건 검색", description = "로그인 유저와 관련된 모든 프로젝트를 조건에 따라 조회합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<List<ProjectResponseDto>> getProjectByCondition(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "condition", required = false) String condition) {
+        ProjectSearchCondition searchCondition = new ProjectSearchCondition(condition);
+        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
+        return ResponseEntity.ok(projectResponseDtos);
+    }
+
 
     @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
     @GetMapping

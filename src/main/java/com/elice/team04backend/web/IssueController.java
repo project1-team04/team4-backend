@@ -4,6 +4,7 @@ import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
+import com.elice.team04backend.dto.search.IssueSearchCondition;
 import com.elice.team04backend.service.IssueService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,6 +52,17 @@ public class IssueController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam("projectId") Long projectId) {
         List<IssueResponseDto> issueResponseDtos = issueService.getIssueByProjectId(projectId);
+        return ResponseEntity.ok(issueResponseDtos);
+    }
+
+    @Operation(summary = "이슈 조건 검색", description = "프로젝트에 속해있는 이슈를 조건 검색하는 기능입니다.")
+    @GetMapping("/search")
+    public ResponseEntity<List<IssueResponseDto>> getIssuesByCondition(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam("projectId") Long projectId,
+            @RequestParam(name = "condition", required = false) String condition) {
+        IssueSearchCondition searchCondition = new IssueSearchCondition(condition);
+        List<IssueResponseDto> issueResponseDtos = issueService.getIssueByCondition(projectId, searchCondition);
         return ResponseEntity.ok(issueResponseDtos);
     }
 
