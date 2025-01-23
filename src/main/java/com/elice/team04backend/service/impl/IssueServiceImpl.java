@@ -5,6 +5,7 @@ import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.issue.IssueRequestDto;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
+import com.elice.team04backend.dto.search.IssueSearchCondition;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
 import com.elice.team04backend.service.FirebaseStorageService;
@@ -97,6 +98,16 @@ public class IssueServiceImpl implements IssueService {
                 .map(Issue::from)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<IssueResponseDto> getIssueByCondition(Long projectId, IssueSearchCondition condition) {
+        return issueRepository.searchIssues(projectId, condition)
+                .stream()
+                .map(Issue::from)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     public IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto) {

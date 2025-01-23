@@ -2,10 +2,9 @@ package com.elice.team04backend.common.config;
 
 import com.elice.team04backend.common.filter.JwtAuthenticationFilter;
 import com.elice.team04backend.common.filter.JwtLoginAuthenticationFilter;
-import com.elice.team04backend.common.filter.ProjectRoleAuthorizationFilter;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
-import com.elice.team04backend.service.UserProjectRoleService;
+import com.elice.team04backend.common.utils.UrlUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,13 +25,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RefreshTokenProvider refreshTokenProvider;
-    private final UserProjectRoleService userProjectRoleService;
     private final AuthenticationConfiguration authenticationConfiguration;
 
     @Bean
@@ -45,30 +42,17 @@ public class SecurityConfig {
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/verify-email").permitAll()
-                            .requestMatchers("/api/auth/verify").permitAll()
-                            .requestMatchers("/api/auth/signup").permitAll()
-                            .requestMatchers("/api/auth/login").permitAll()
-                            .requestMatchers("/api/auth/refresh-token").permitAll()
-                            .requestMatchers("/swagger-ui/**").permitAll()
-                            .requestMatchers("/api-docs/**").permitAll()
-                            .requestMatchers("/api/accept/**").permitAll()
-                            .anyRequest().authenticated()
+                        auth.requestMatchers(UrlUtils.PermittedUrl).permitAll()
+                                .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtLoginAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(projectRoleAuthorizationFilter(), JwtAuthenticationFilter.class);
+                .addFilterAfter(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(){
         return new JwtAuthenticationFilter(jwtTokenProvider);
-    }
-
-    @Bean
-    public ProjectRoleAuthorizationFilter projectRoleAuthorizationFilter(){
-        return new ProjectRoleAuthorizationFilter(jwtTokenProvider, userProjectRoleService);
     }
 
     @Bean

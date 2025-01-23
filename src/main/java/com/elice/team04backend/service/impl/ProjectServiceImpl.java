@@ -6,6 +6,7 @@ import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
+import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
 import com.elice.team04backend.service.ProjectService;
@@ -42,6 +43,14 @@ public class ProjectServiceImpl implements ProjectService {
     public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
+        return projectPage.stream()
+                .map(Project::from)
+                .toList();
+    }
+
+    public List<ProjectResponseDto> getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Project> projectPage = projectRepository.searchProjects(userId, condition, pageable);
         return projectPage.stream()
                 .map(Project::from)
                 .toList();
@@ -269,13 +278,13 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
         if (userRole.getRole() == Role.MANAGER) {
-            handleManagerLeaving(projectId, userId, newManagerId);
+            handleManagerLeaving(projectId, newManagerId);
         }
 
         userProjectRoleRepository.delete(userRole);
     }
 
-    private void handleManagerLeaving(Long userId, Long projectId, Long newManagerId) {
+    private void handleManagerLeaving(Long projectId, Long newManagerId) {
         List<UserProjectRole> members = userProjectRoleRepository.findAllByProjectId(projectId);
 
         if (newManagerId == null) {

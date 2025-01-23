@@ -16,6 +16,9 @@ public class IssueRequestDto {
 
     private Long labelId;
 
+    @NotNull(message = "이슈 제목을 입력해주세요.")
+    private String name;
+
     @NotNull(message = "담당자 ID는 필수입니다.")
     private Long assigneeUserId;
 
@@ -28,13 +31,14 @@ public class IssueRequestDto {
     private IssueStatus status;
 
 
-    public Issue from(User reporter,User assignee , Project project, Label label, String generatedIssueKey) {
+    public Issue from(User reporter, User assignee, Project project, Label label, String generatedIssueKey) {
         return Issue.builder()
                 .project(project)
                 .label(label)
                 .reporter(reporter)
                 .assignee(assignee)
                 .issueKey(generatedIssueKey)
+                .name(this.name)
                 .description(this.getDescription())
                 .troubleShooting(this.getTroubleShooting())
                 .status(this.getStatus())

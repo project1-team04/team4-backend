@@ -8,8 +8,11 @@ import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.dto.project.ProjectInviteRequestDto;
+import com.elice.team04backend.dto.search.ProjectSearchCondition;
+import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
+import com.elice.team04backend.service.UserProjectRoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,26 +35,49 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final LabelService labelService;
+    private final UserProjectRoleService userProjectRoleService;
 
 
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/test")
     public ResponseEntity testProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId) {
+            @RequestParam("projectId") Long projectId) {
         log.info("{}",userDetails.getUserId());
         return ResponseEntity.ok().build();
     }
+    @Operation(summary = "로그인 유저와 관련된 프로젝트 조건 검색", description = "로그인 유저와 관련된 모든 프로젝트를 조건에 따라 조회합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<List<ProjectResponseDto>> getProjectByCondition(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "condition", required = false) String condition) {
+        ProjectSearchCondition searchCondition = new ProjectSearchCondition(condition);
+        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
+        return ResponseEntity.ok(projectResponseDtos);
+    }
+
 
     @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
     @GetMapping
     public ResponseEntity<List<ProjectResponseDto>> getUserProjects(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
         List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
         return ResponseEntity.ok(projectResponseDtos);
     }
+
+    @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
+    @GetMapping("/users")
+    public ResponseEntity<List<UserProjectRoleResponseDto>> getUsersByProject(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam("projectId") Long projectId) {
+        List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
+        return ResponseEntity.ok(users);
+    }
+
 
     @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성합니다.")
     @PostMapping
@@ -66,7 +92,7 @@ public class ProjectController {
     @GetMapping("/details")
     public ResponseEntity<ProjectResponseDto> getProjectDetails(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId) {
+            @RequestParam("projectId") Long projectId) {
         ProjectResponseDto projectResponseDto = projectService.getProjectById(projectId);
         return ResponseEntity.ok(projectResponseDto);
     }
@@ -76,7 +102,7 @@ public class ProjectController {
     @PatchMapping
     public ResponseEntity<ProjectResponseDto> patchProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId,
+            @RequestParam("projectId") Long projectId,
             @Valid @RequestBody ProjectUpdateDto projectUpdateDto) {
         ProjectResponseDto projectResponseDto = projectService.patchProject(userDetails.getUserId(), projectId, projectUpdateDto);
         return ResponseEntity.ok(projectResponseDto);
@@ -87,7 +113,7 @@ public class ProjectController {
     @DeleteMapping
     public ResponseEntity<Void> deleteProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId) {
+            @RequestParam("projectId") Long projectId) {
         projectService.deleteProject(userDetails.getUserId(), projectId);
         return ResponseEntity.noContent().build();
     }
@@ -98,7 +124,7 @@ public class ProjectController {
     @PostMapping("/labels")
     public ResponseEntity<LabelResponseDto> postLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId,
+            @RequestParam("projectId") Long projectId,
             @Valid @RequestBody LabelRequestDto labelRequestDto) {
         LabelResponseDto labelResponseDto = labelService.postLabel(projectId, labelRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(labelResponseDto);
@@ -108,7 +134,7 @@ public class ProjectController {
     @GetMapping("/labels")
     public ResponseEntity<List<LabelResponseDto>> getAllLabelsByProjectId(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId) {
+            @RequestParam("projectId") Long projectId) {
         List<LabelResponseDto> labelResponseDtos = labelService.getAllLabelsByProjectId(projectId);
         return ResponseEntity.ok(labelResponseDtos);
     }
@@ -117,8 +143,7 @@ public class ProjectController {
     @PatchMapping("/labels")
     public ResponseEntity<LabelResponseDto> patchLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            //@RequestParam Long projectId,
-            @RequestParam Long labelId,
+            @RequestParam("labelId") Long labelId,
             @Valid @RequestBody LabelUpdateDto labelUpdateDto) {
         LabelResponseDto labelResponseDto = labelService.patchLabel(labelId, labelUpdateDto);
         return ResponseEntity.ok(labelResponseDto);
@@ -128,7 +153,7 @@ public class ProjectController {
     @DeleteMapping("/labels")
     public ResponseEntity<Void> deleteLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long labelId) {
+            @RequestParam("labelId") Long labelId) {
         labelService.deleteLabel(labelId);
         return ResponseEntity.noContent().build();
     }
@@ -138,7 +163,7 @@ public class ProjectController {
     @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
     @PostMapping("/invite")
     public ResponseEntity<Void> inviteUsers(
-            @RequestParam Long projectId,
+            @RequestParam("projectId") Long projectId,
             @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
@@ -149,8 +174,8 @@ public class ProjectController {
     @DeleteMapping("/leave")
     public ResponseEntity<Void> leaveProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId,
-            @RequestParam(required = false) Long newManagerId) {
+            @RequestParam("projectId") Long projectId,
+            @RequestParam(name = "newManagerId", required = false) Long newManagerId) {
         projectService.leaveProject(userDetails.getUserId(), projectId, newManagerId);
         return ResponseEntity.noContent().build();
     }
@@ -160,8 +185,8 @@ public class ProjectController {
     @PatchMapping("/assign-manager")
     public ResponseEntity<Void> assignManager(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam Long projectId,
-            @RequestParam Long newManagerId) {
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("newManagerId") Long newManagerId) {
         projectService.assignManager(userDetails.getUserId(), projectId, newManagerId);
         return ResponseEntity.ok().build();
     }

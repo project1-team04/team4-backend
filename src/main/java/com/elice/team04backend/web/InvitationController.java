@@ -20,7 +20,7 @@ public class InvitationController {
 
     @Operation(summary = "초대 수락", description = "초대 링크를 통해 프로젝트에 참여합니다.")
     @GetMapping("/{token}")
-    public ResponseEntity<String> acceptInvitation(@PathVariable String token) {
+    public ResponseEntity<String> acceptInvitation(@PathVariable("token") String token) {
         projectService.acceptInvitation(token);
 
         String htmlResponse = """

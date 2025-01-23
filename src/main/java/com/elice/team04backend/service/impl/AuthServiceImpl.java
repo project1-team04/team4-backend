@@ -3,13 +3,12 @@ package com.elice.team04backend.service.impl;
 import com.elice.team04backend.common.constant.Provider;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.constant.UserStatus;
-import com.elice.team04backend.common.dto.request.SignUpRequestDto;
+import com.elice.team04backend.common.dto.request.*;
 import com.elice.team04backend.common.model.RedisDAO;
 import com.elice.team04backend.common.service.EmailService;
-import com.elice.team04backend.common.dto.request.ConfirmEmailRequestDto;
-import com.elice.team04backend.common.dto.request.VerifyEmailRequestDto;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
+import com.elice.team04backend.common.utils.VerificationCodeGenerator;
 import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.entity.UserProjectRole;
@@ -17,6 +16,7 @@ import com.elice.team04backend.repository.ProjectRepository;
 import com.elice.team04backend.repository.UserProjectRoleRepository;
 import com.elice.team04backend.repository.UserRepository;
 import com.elice.team04backend.service.AuthService;
+import com.elice.team04backend.service.FirebaseStorageService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,8 +25,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+
+import java.io.IOException;
 
 import static com.elice.team04backend.common.utils.VerificationCodeGenerator.generateVerificationCode;
 
@@ -39,13 +42,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final FirebaseStorageService firebaseStorageService;
     private final RedisDAO redisDAO;
     private final JwtTokenProvider jwtTokenProvider;
 
 
     @Override
     @Transactional
-    public void signUp(SignUpRequestDto signUpRequestDto) {
+    public void signUp(SignUpRequestDto signUpRequestDto, MultipartFile profileImage) {
         // 1. 이메일 인증 확인
         if(!redisDAO.getValues(signUpRequestDto.getEmail()).equals("VERIFIED")) {
             throw new IllegalStateException("이메일 인증이 안됐습니다.");
@@ -56,10 +60,18 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("중복되는 이메일입니다.");
         }
 
+        String profileImageUrl;
+
+        try {
+            profileImageUrl = firebaseStorageService.uploadImage(profileImage);
+        } catch (IOException e) {
+            throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.");
+        }
+
         User signUpUser = User.builder()
                 .email(signUpRequestDto.getEmail())
                 .username(signUpRequestDto.getUsername())
-                .profileImage(signUpRequestDto.getProfileImageUrl())
+                .profileImage(profileImageUrl)
                 .password(passwordEncoder.encode(signUpRequestDto.getPassword()))
                 .isVerified(true)
                 .provider(Provider.EMAIL)
@@ -73,19 +85,27 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void logout(Long userId, HttpServletRequest request, HttpServletResponse response) {
         // 1. AccessToken 블랙리스트 등록
-        String accessToken = jwtTokenProvider.resolveAccessToken(request);
-        redisDAO.setValues(accessToken, "logout", jwtTokenProvider.getAccessTokenExpiration());
+        invalidateAccessToken(request);
 
         // 2. RefreshToken 쿠키 만료 시키기
+        invalidateRefreshToken(response);
+
+        // 3. RefreshToken User 테이블에서 삭제
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
+        user.removeRefreshToken();
+    }
+
+    private void invalidateAccessToken(HttpServletRequest request) {
+        String accessToken = jwtTokenProvider.resolveAccessToken(request);
+        redisDAO.setValues(accessToken, "logout", jwtTokenProvider.getAccessTokenExpiration());
+    }
+
+    private static void invalidateRefreshToken(HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", null);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(0); // 즉시 만료
         response.addCookie(refreshTokenCookie); // 클라이언트에 삭제 요청
-
-        // 3. RefreshToken User 테이블에서 삭제
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("유저가 없습니다."));
-        user.removeRefreshToken();
     }
 
     @Override
@@ -99,7 +119,51 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalStateException("만료된 토큰입니다.");
         }
 
-        return jwtTokenProvider.generateAccessToken(user.getEmail(), user.getId());
+        return jwtTokenProvider.generateAccessToken(user.getEmail(), user.getId(), user.getUsername());
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordRequestDto resetPasswordRequestDto) {
+        // 1. 임시 비밀번호 생성
+        String temporaryPassword = VerificationCodeGenerator.generateVerificationCode();
+
+        // 2. 비밀번호 변경
+        User user = userRepository.findByEmailAndStatus(resetPasswordRequestDto.email(), UserStatus.ACTIVE).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다."));
+        user.changePassword(passwordEncoder.encode(temporaryPassword));
+        userRepository.save(user);
+
+        // 3. 이메일 전송
+        emailService.sendEmail(resetPasswordRequestDto.email(), "Threadly 임시 비밀번호입니다.", temporaryPassword);
+    }
+
+    @Override
+    public void changePassword(Long userId, ChangePasswordRequestDto changePasswordRequestDto) {
+        // 1. 유저 찾기
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다"));
+
+        // 2. 비밀번호 비교
+        if(!passwordEncoder.matches(changePasswordRequestDto.oldPassword(), user.getPassword())){
+            throw new IllegalStateException("잘못된 비밀번호입니다.");
+        }
+
+        // 3. 비밀번호 변경
+        user.changePassword(passwordEncoder.encode(changePasswordRequestDto.newPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deactivateAccount(Long userId, HttpServletRequest request, HttpServletResponse response) {
+        // 1. 유저 찾기
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다"));
+
+        // 2. 로그아웃 (토큰 비활성화)
+        invalidateAccessToken(request);
+        invalidateRefreshToken(response);
+        user.removeRefreshToken();
+
+        // 3. 유저 계정 비활성화
+        user.deactivateAccount();
+        userRepository.save(user);
     }
 
     @Override
