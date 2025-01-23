@@ -33,14 +33,14 @@ public class AuthController {
     private final AuthService authService;
     private final OAuthService oAuthService;
 
-    @Operation(summary = "이메일 인증 코드 발급 요청", description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
+    @Operation(summary = "이메일 인증 코드 발급 요청", security = {},description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody @Valid VerifyEmailRequestDto verifyEmailRequestDto) {
         authService.verifyEmail(verifyEmailRequestDto);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 인증 코드 확인 요청", description = "인증 코드가 올바른지 확인하는 요청입니다.")
+    @Operation(summary = "이메일 인증 코드 확인 요청", security = {},description = "인증 코드가 올바른지 확인하는 요청입니다.")
     @PostMapping("/verify")
     public ResponseEntity<?> confirmVerificationCode(@RequestBody @Valid ConfirmEmailRequestDto confirmEmailRequestDto) {
         authService.confirmVerificationCode(confirmEmailRequestDto);
@@ -61,7 +61,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 일반 회원가입", description = "이메일 인증을 통한 회원가입입니다. 해당 API를 사용하려면, https://kdt-gitlab.elice.io/pttrack/class_01/web_project_i/team04/team04-documentations/-/issues/27 를 봐주세요")
+    @Operation(summary = "이메일 일반 회원가입", security = {}, description = "이메일 인증을 통한 회원가입입니다. 해당 API를 사용하려면, https://kdt-gitlab.elice.io/pttrack/class_01/web_project_i/team04/team04-documentations/-/issues/27 를 봐주세요")
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> signup(
             @Parameter(description = "프로필 이미지 파일", content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE))
@@ -72,7 +72,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "RefreshToken을 통한 AccessToken 발급 요청", description = "RefreshToken을 통한 AccessToken 발급 요청합니다.")
+    @Operation(summary = "RefreshToken을 통한 AccessToken 발급 요청", security = {},description = "RefreshToken을 통한 AccessToken 발급 요청합니다.")
     @GetMapping("/refresh-token")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
 
@@ -101,7 +101,7 @@ public class AuthController {
         return ResponseEntity.ok(new AccessTokenResponseDto(newAccessToken));
     }
 
-    @Operation(summary = "로그아웃", description = "refreshToken을 제거하고, accessToken을 블랙리스트로 관리합니다.")
+    @Operation(summary = "로그아웃",description = "refreshToken을 제거하고, accessToken을 블랙리스트로 관리합니다.")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@AuthenticationPrincipal UserDetailsImpl userDetails, HttpServletRequest request, HttpServletResponse response) {
         authService.logout(userDetails.getUserId(), request, response);

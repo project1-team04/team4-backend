@@ -4,7 +4,6 @@ import com.elice.team04backend.common.constant.IssueStatus;
 import com.elice.team04backend.common.entity.BaseEntity;
 import com.elice.team04backend.dto.issue.IssueResponseDto;
 import com.elice.team04backend.dto.issue.IssueUpdateDto;
-import com.elice.team04backend.dto.issueImage.IssueImageResponseDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +13,6 @@ import org.hibernate.envers.AuditOverride;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -37,13 +35,15 @@ public class Issue extends BaseEntity {
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    //@JoinColumn(name = "assignee_user_id", nullable = false)
-    @JoinColumn(name = "assignee_user_id")
+    @JoinColumn(name = "assignee_user_id", nullable = false)
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_user_id", nullable = false)
     private User reporter;
+
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "issue_key")
     private String issueKey;
@@ -64,6 +64,7 @@ public class Issue extends BaseEntity {
     public void update(IssueUpdateDto issueUpdateDto) {
         this.description = issueUpdateDto.getDescription();
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
+        this.name = issueUpdateDto.getName();
     }
 
     public void addIssueImages(IssueImage issueImage) {
@@ -79,10 +80,11 @@ public class Issue extends BaseEntity {
                 .id(String.valueOf(this.id))
                 .projectId(this.getProject().getId())
                 .labelId(this.getLabel().getId())
-                //.assigneeUserId(this.getAssignee().getId())
+                .assigneeUserId(this.getAssignee().getId())
                 .reporterUserId(this.getReporter().getId())
                 .issueKey(this.getIssueKey())
                 .description(this.getDescription())
+                .name(this.getName())
                 .troubleShooting(this.getTroubleShooting())
                 .status(this.getStatus())
                 .build();

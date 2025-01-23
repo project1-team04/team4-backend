@@ -48,6 +48,10 @@ public class Project extends BaseEntity {
         this.name = projectUpdateDto.getName();
     }
 
+    public void updateProjectKey(String projectKey) {
+        this.projectKey = projectKey;
+    }
+
     public void addIssue(Issue issue) {
         this.issues.add(issue);
         this.issueCount = (long) this.issues.size();
