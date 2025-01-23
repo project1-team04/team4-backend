@@ -2,69 +2,42 @@ package com.elice.team04backend.chat.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+@Getter
+@Setter
 @Document(collection = "messages")
 public class Message {
     @JsonProperty("id")
     @Id
     private String id;
 
-    @JsonProperty("issue_id")
-    private String issueId;
+    @JsonProperty("userId")
+    private int userId;
 
-    @JsonProperty("sender") // JSON의 "sender" 필드와 매핑
+    @JsonProperty("issueId")
+    private int issueId;
+
+    @JsonProperty("sender")
     private String sender;
 
-    @JsonProperty("content") // JSON의 "content" 필드와 매핑
+    @JsonProperty("content")
     private String content;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
+    @JsonProperty("readBy")
+    private Set<String> readBy = new HashSet<>();
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getIssueId() {
-        return issueId;
-    }
-
-    public void setIssueId(String issueId) {
-        this.issueId = issueId;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
-    }
+    @JsonProperty("readById")
+    private Set<String> readById = new HashSet<>();
 }
