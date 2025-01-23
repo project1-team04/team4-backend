@@ -28,6 +28,12 @@ public class UserDetailsImpl implements UserDetails {
         return user.getEmail();
     }
 
+    // UserDetail의 username은 email이다 (로그인 시 ID가 email이 됨.)
+    // 이 메소드의 username은 사용자명을 말한다.
+    public String getName(){
+        return user.getUsername();
+    }
+
     public Long getUserId(){
         return user.getId();
     }

@@ -36,15 +36,16 @@ public class JwtTokenProvider {
 
     // Token 생성
 
-    public String generateAccessToken(String email, Long userId) {
-        return generateToken(email, userId, tokenProperty.getAccessTokenExpiration());
+    public String generateAccessToken(String email, Long userId, String username) {
+        return generateToken(email, userId, username, tokenProperty.getAccessTokenExpiration());
     }
 
-    private String generateToken(String email, Long userId, long expirationTime) {
+    private String generateToken(String email, Long userId, String username,  long expirationTime) {
         long now = System.currentTimeMillis();
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
+                .claim("username", username)
                 .setIssuedAt(new Date(now))
                 .setExpiration(new Date(now + expirationTime))
                 .signWith(secretKey, SignatureAlgorithm.HS256)

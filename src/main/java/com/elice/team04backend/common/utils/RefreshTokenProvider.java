@@ -3,6 +3,8 @@ package com.elice.team04backend.common.utils;
 import com.elice.team04backend.common.config.property.TokenProperty;
 import com.elice.team04backend.entity.User;
 import com.elice.team04backend.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,5 +41,18 @@ public class RefreshTokenProvider {
 
     public Long getRefreshTokenExpiration() {
         return tokenProperty.getRefreshTokenExpiration();
+    }
+
+    public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        int cookieMaxAge = (int) (getRefreshTokenExpiration() * 60 * 60); // 초 단위로 변환
+
+        // 쿠키 생성
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true); // JavaScript에서 접근 불가
+        refreshTokenCookie.setPath("/");     // 애플리케이션 전체에서 사용 가능
+        refreshTokenCookie.setMaxAge(cookieMaxAge); // 쿠키 유효 기간 설정
+
+        // 쿠키 추가
+        response.addCookie(refreshTokenCookie);
     }
 }
