@@ -6,7 +6,6 @@ import com.elice.team04backend.common.utils.JwtTokenProvider;
 import com.elice.team04backend.common.utils.RefreshTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -66,25 +65,12 @@ public class JwtLoginAuthenticationFilter extends UsernamePasswordAuthentication
         String refreshToken = refreshTokenProvider.createAndStoreRefreshToken(userDetails.getUserId());
 
         // 리프레시 토큰을 쿠키로 설정
-        setRefreshTokenCookie(response, refreshToken);
+        refreshTokenProvider.setRefreshTokenCookie(response, refreshToken);
 
         // 액세스 토큰 JWT를 클라이언트에 반환
         response.setContentType("application/json");
         response.getWriter().write("{\"accessToken\": \"" + accessToken + "\"}");
         response.getWriter().flush();
-    }
-
-    private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        int cookieMaxAge = (int) (refreshTokenProvider.getRefreshTokenExpiration() * 60 * 60); // 초 단위로 변환
-
-        // 쿠키 생성
-        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true); // JavaScript에서 접근 불가
-        refreshTokenCookie.setPath("/");     // 애플리케이션 전체에서 사용 가능
-        refreshTokenCookie.setMaxAge(cookieMaxAge); // 쿠키 유효 기간 설정
-
-        // 쿠키 추가
-        response.addCookie(refreshTokenCookie);
     }
 
 }

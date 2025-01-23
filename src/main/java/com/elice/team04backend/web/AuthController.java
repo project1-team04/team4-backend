@@ -1,12 +1,15 @@
 package com.elice.team04backend.web;
 
+import com.elice.team04backend.common.constant.SocialLoginType;
 import com.elice.team04backend.common.dto.request.*;
 import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.common.dto.response.AccessTokenResponseDto;
 import com.elice.team04backend.service.AuthService;
+import com.elice.team04backend.service.OAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class AuthController {
 
     private final AuthService authService;
+    private final OAuthService oAuthService;
 
     @Operation(summary = "이메일 인증 코드 발급 요청", description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
     @PostMapping("/verify-email")
@@ -50,7 +54,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비밀번호 변경 요청", description = "이전 비밀번호를 검증하여 새로운 비밀번호로 변경합니다.")
+    @Operation(summary = "비밀번호 변경 요청", description = "이전 비밀번호를 검증하여 새로운 비밀번호로 변경합니다.", security = @SecurityRequirement(name = "access_key"))
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal UserDetailsImpl userDetails, @RequestBody @Valid ChangePasswordRequestDto changePasswordRequestDto) {
         authService.changePassword(userDetails.getUserId(), changePasswordRequestDto);
@@ -110,4 +114,24 @@ public class AuthController {
         authService.deactivateAccount(userDetails.getUserId(), request, response);
         return ResponseEntity.ok().build();
     }
+
+    @Operation(summary = "유저 소셜 로그인/회원가입(kakao, naver, google)을 위한 redirectUrl 요청", description = "소셜 가입을 할 수 있는 redirectUrl를 리턴해준다.")
+    @GetMapping("/{socialLoginType}/login")
+    public String socialLoginRedirect(@PathVariable(name="socialLoginType") String SocialLoginPath) {
+        SocialLoginType socialLoginType = SocialLoginType.valueOf(SocialLoginPath.toUpperCase());
+        return oAuthService.accessRequest(socialLoginType);
+    }
+
+    @Operation(summary = "유저 소셜 정보로 가입(kakao, naver, google)", description = "소셜 정보로 회원가입 혹은 로그인을 진행한다.")
+    @GetMapping(value = "/{socialLoginType}/login/callback")
+    public ResponseEntity<?> socialLoginCallback(
+            @PathVariable(name = "socialLoginType") String socialLoginPath,
+            @RequestParam(name = "authCode") String authCode,
+            HttpServletResponse response){
+        log.info(">> 소셜 로그인 API 서버로부터 받은 인가 code : {}", authCode);
+        SocialLoginType socialLoginType = SocialLoginType.valueOf(socialLoginPath.toUpperCase());
+        AccessTokenResponseDto accessTokenResponseDto = oAuthService.oAuthLoginOrJoin(socialLoginType, authCode, response);
+        return ResponseEntity.ok(accessTokenResponseDto);
+    }
+
 }

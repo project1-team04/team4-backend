@@ -10,6 +10,9 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버에서 오류가 발생했습니다."),
 
+    // Auth Errors
+    INVALID_OAUTH_TYPE(HttpStatus.BAD_REQUEST, "INVALID_OAUTH_TYPE", "잘못된 소셜 로그인 타입입니다."),
+
     // Key Errors
     KEY_CREATE_FAILED(HttpStatus.CONFLICT, "KEY_CREATE_FAILED", "키 생성에 실패했습니다. 다른 프로젝트 명을 사용해주세요."),
     IMAGE_DELETE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "IMAGE_DELETE_FAILED", "이미지 삭제에 실패했습니다."),
