@@ -64,6 +64,7 @@ public class Issue extends BaseEntity {
     public void update(IssueUpdateDto issueUpdateDto) {
         this.description = issueUpdateDto.getDescription();
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
+        this.name = issueUpdateDto.getName();
     }
 
     public void addIssueImages(IssueImage issueImage) {
