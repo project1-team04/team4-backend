@@ -48,6 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<ProjectResponseDto> getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Project> projectPage = projectRepository.searchProjects(userId, condition, pageable);
