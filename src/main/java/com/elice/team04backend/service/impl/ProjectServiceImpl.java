@@ -5,6 +5,7 @@ import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.project.ProjectRequestDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.project.ProjectSearchResponseDto;
 import com.elice.team04backend.dto.project.ProjectUpdateDto;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.*;
@@ -38,23 +39,27 @@ public class ProjectServiceImpl implements ProjectService {
     private final JavaMailSender mailSender;
     private final IssueRepository issueRepository;
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
-        return projectPage.stream()
-                .map(Project::from)
-                .toList();
-    }
+//    @Transactional(readOnly = true)
+//    @Override
+//    public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
+//        return projectPage.stream()
+//                .map(Project::from)
+//                .toList();
+//    }
 
     @Transactional(readOnly = true)
-    public List<ProjectResponseDto> getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
+    public ProjectSearchResponseDto getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Project> projectPage = projectRepository.searchProjects(userId, condition, pageable);
-        return projectPage.stream()
+
+        List<ProjectResponseDto> projectResponseDtos = projectPage.stream()
                 .map(Project::from)
                 .toList();
+
+        long totalProjects = projectRepository.countProjectsByUserId(userId);
+        return new ProjectSearchResponseDto(projectResponseDtos, projectPage.getTotalElements(), totalProjects);
     }
 
     @Transactional(readOnly = true)
@@ -238,7 +243,7 @@ public class ProjectServiceImpl implements ProjectService {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
         String content = String.format(
-                        "<p>안녕하세요,</p>" +
+                "<p>안녕하세요,</p>" +
                         "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
                         "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
                         "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +

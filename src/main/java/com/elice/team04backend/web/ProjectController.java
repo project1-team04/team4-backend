@@ -4,10 +4,7 @@ import com.elice.team04backend.common.model.UserDetailsImpl;
 import com.elice.team04backend.dto.label.LabelRequestDto;
 import com.elice.team04backend.dto.label.LabelResponseDto;
 import com.elice.team04backend.dto.label.LabelUpdateDto;
-import com.elice.team04backend.dto.project.ProjectRequestDto;
-import com.elice.team04backend.dto.project.ProjectResponseDto;
-import com.elice.team04backend.dto.project.ProjectUpdateDto;
-import com.elice.team04backend.dto.project.ProjectInviteRequestDto;
+import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.service.LabelService;
@@ -37,7 +34,6 @@ public class ProjectController {
     private final LabelService labelService;
     private final UserProjectRoleService userProjectRoleService;
 
-
     @PreAuthorize("hasRole('MANAGER')")
     @GetMapping("/test")
     public ResponseEntity testProject(
@@ -46,28 +42,28 @@ public class ProjectController {
         log.info("{}",userDetails.getUserId());
         return ResponseEntity.ok().build();
     }
+
     @Operation(summary = "로그인 유저와 관련된 프로젝트 조건 검색", description = "로그인 유저와 관련된 모든 프로젝트를 조건에 따라 조회합니다.")
-    @GetMapping("/search")
-    public ResponseEntity<List<ProjectResponseDto>> getProjectByCondition(
+    @GetMapping
+    public ResponseEntity<ProjectSearchResponseDto> getProjectByCondition(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "condition", required = false) String condition) {
         ProjectSearchCondition searchCondition = new ProjectSearchCondition(condition);
-        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
-        return ResponseEntity.ok(projectResponseDtos);
+        ProjectSearchResponseDto responseDto = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
+        return ResponseEntity.ok(responseDto);
     }
 
-
-    @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
-    @GetMapping
-    public ResponseEntity<List<ProjectResponseDto>> getUserProjects(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size) {
-        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
-        return ResponseEntity.ok(projectResponseDtos);
-    }
+//    @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
+//    @GetMapping
+//    public ResponseEntity<List<ProjectResponseDto>> getUserProjects(
+//            @AuthenticationPrincipal UserDetailsImpl userDetails,
+//            @RequestParam(name = "page", defaultValue = "0") int page,
+//            @RequestParam(name = "size", defaultValue = "10") int size) {
+//        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
+//        return ResponseEntity.ok(projectResponseDtos);
+//    }
 
     @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
     @GetMapping("/users")
@@ -77,7 +73,6 @@ public class ProjectController {
         List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
         return ResponseEntity.ok(users);
     }
-
 
     @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성합니다.")
     @PostMapping
@@ -98,7 +93,6 @@ public class ProjectController {
     }
 
     @Operation(summary = "단일 프로젝트 수정", description = "단일 프로젝트를 수정합니다.")
-    @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping
     public ResponseEntity<ProjectResponseDto> patchProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -109,7 +103,6 @@ public class ProjectController {
     }
 
     @Operation(summary = "단일 프로젝트 삭제", description = "단일 프로젝트를 삭제합니다.")
-    @PreAuthorize("hasRole('MANAGER')")
     @DeleteMapping
     public ResponseEntity<Void> deleteProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -181,7 +174,6 @@ public class ProjectController {
     }
 
     @Operation(summary = "프로젝트 관리자를 변경", description = "MANAGER가 특정 유저에게 MANAGER 권한을 부여합니다.")
-    @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping("/assign-manager")
     public ResponseEntity<Void> assignManager(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
