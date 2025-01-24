@@ -119,10 +119,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         String baseKey = baseKeyBuilder.toString();
+        List<String> existingKeys = projectRepository.findAllProjectKeysByPrefix(baseKey);
         String projectKey = baseKey;
         int attempt = 0;
 
-        while (projectRepository.existsByProjectKey(projectKey)) {
+        while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
             if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
@@ -186,10 +187,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         String baseKey = baseKeyBuilder.toString();
+        List<String> existingKeys = projectRepository.findAllProjectKeysByPrefix(baseKey);
         String projectKey = baseKey;
         int attempt = 0;
 
-        while (projectRepository.existsByProjectKey(projectKey)) {
+        while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
             if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);

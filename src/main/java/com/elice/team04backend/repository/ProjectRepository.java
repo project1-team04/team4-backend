@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long>, ProjectRepositoryCustom {
@@ -23,5 +25,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
             "JOIN UserProjectRole upr ON p.id = upr.project.id " +
             "WHERE upr.user.id = :userId")
     long countProjectsByUserId(@Param("userId") Long userId);
-
+    @Query("SELECT p.projectKey FROM Project p WHERE p.projectKey LIKE :prefix%")
+    List<String> findAllProjectKeysByPrefix(@Param("prefix") String prefix);
 }
