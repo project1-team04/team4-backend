@@ -33,21 +33,28 @@ public class AuthController {
     private final AuthService authService;
     private final OAuthService oAuthService;
 
-    @Operation(summary = "이메일 인증 코드 발급 요청", security = {},description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
+    @Operation(summary = "일반 이메일 로그인 요청 (AT X)", security = {},description = "일반 이메일 로그인을 합니다.")
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody @Valid SignInRequestDto signInRequestDto) {
+        // Swagger 용. 실제 구현은 Filter에 존재
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "이메일 인증 코드 발급 요청 (AT X)", security = {},description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody @Valid VerifyEmailRequestDto verifyEmailRequestDto) {
         authService.verifyEmail(verifyEmailRequestDto);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 인증 코드 확인 요청", security = {},description = "인증 코드가 올바른지 확인하는 요청입니다.")
+    @Operation(summary = "이메일 인증 코드 확인 요청 (AT X)", security = {},description = "인증 코드가 올바른지 확인하는 요청입니다.")
     @PostMapping("/verify")
     public ResponseEntity<?> confirmVerificationCode(@RequestBody @Valid ConfirmEmailRequestDto confirmEmailRequestDto) {
         authService.confirmVerificationCode(confirmEmailRequestDto);
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "비밀번호 찾기(임시 비밀번호) 요청", description = "이메일을 입력하고 해당 이메일로 임시 비밀번호를 전송합니다.")
+    @Operation(summary = "비밀번호 찾기(임시 비밀번호) 요청 (AT X)", description = "이메일을 입력하고 해당 이메일로 임시 비밀번호를 전송합니다.")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequestDto resetPasswordRequestDto) {
         authService.resetPassword(resetPasswordRequestDto);
@@ -61,7 +68,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 일반 회원가입", security = {}, description = "이메일 인증을 통한 회원가입입니다. 해당 API를 사용하려면, https://kdt-gitlab.elice.io/pttrack/class_01/web_project_i/team04/team04-documentations/-/issues/27 를 봐주세요")
+    @Operation(summary = "이메일 일반 회원가입 (AT X)", security = {}, description = "이메일 인증을 통한 회원가입입니다. 해당 API를 사용하려면, https://kdt-gitlab.elice.io/pttrack/class_01/web_project_i/team04/team04-documentations/-/issues/27 를 봐주세요")
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> signup(
             @Parameter(description = "프로필 이미지 파일", content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE))
@@ -72,7 +79,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "RefreshToken을 통한 AccessToken 발급 요청", security = {},description = "RefreshToken을 통한 AccessToken 발급 요청합니다.")
+    @Operation(summary = "RefreshToken을 통한 AccessToken 발급 요청 (AT X, RT O)", security = {},description = "RefreshToken을 통한 AccessToken 발급 요청합니다.")
     @GetMapping("/refresh-token")
     public ResponseEntity<?> refreshAccessToken(HttpServletRequest request) {
 
@@ -115,14 +122,14 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "유저 소셜 로그인/회원가입(kakao, naver, google)을 위한 redirectUrl 요청", description = "소셜 가입을 할 수 있는 redirectUrl를 리턴해준다.")
+    @Operation(summary = "유저 소셜 로그인/회원가입(kakao, naver, google)을 위한 redirectUrl 요청 (AT X)", description = "소셜 가입을 할 수 있는 redirectUrl를 리턴해준다.")
     @GetMapping("/{socialLoginType}/login")
     public String socialLoginRedirect(@PathVariable(name="socialLoginType") String SocialLoginPath) {
         SocialLoginType socialLoginType = SocialLoginType.valueOf(SocialLoginPath.toUpperCase());
         return oAuthService.accessRequest(socialLoginType);
     }
 
-    @Operation(summary = "유저 소셜 정보로 가입(kakao, naver, google)", description = "소셜 정보로 회원가입 혹은 로그인을 진행한다.")
+    @Operation(summary = "유저 소셜 정보로 가입(kakao, naver, google) (AT X)", description = "소셜 정보로 회원가입 혹은 로그인을 진행한다.")
     @GetMapping(value = "/{socialLoginType}/login/callback")
     public ResponseEntity<?> socialLoginCallback(
             @PathVariable(name = "socialLoginType") String socialLoginPath,
