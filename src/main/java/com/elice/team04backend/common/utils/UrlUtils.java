@@ -14,6 +14,5 @@ public class UrlUtils {
             "/swagger-ui/**",
             "/api-docs/**",
             "/api/accept/**",
-            "/api/messages/**"
     };
 }
