@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.elice.team04backend.entity.QIssue.issue;
 import static org.springframework.util.StringUtils.hasText;
 
 @Repository
@@ -18,6 +17,8 @@ import static org.springframework.util.StringUtils.hasText;
 public class IssueRepositoryCustomImpl implements IssueRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+    QIssue issue = QIssue.issue;
+
 
     @Override
     public List<Issue> searchIssues(Long projectId, IssueSearchCondition searchCondition) {

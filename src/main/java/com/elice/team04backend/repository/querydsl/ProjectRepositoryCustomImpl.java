@@ -2,6 +2,8 @@ package com.elice.team04backend.repository.querydsl;
 
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.Project;
+import com.elice.team04backend.entity.QProject;
+import com.elice.team04backend.entity.QUserProjectRole;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-import static com.elice.team04backend.entity.QProject.project;
-import static com.elice.team04backend.entity.QUserProjectRole.userProjectRole;
 import static org.springframework.util.StringUtils.hasText;
 
 @Repository
@@ -22,6 +22,9 @@ import static org.springframework.util.StringUtils.hasText;
 public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
+
+    QProject project = QProject.project;
+    QUserProjectRole userProjectRole = QUserProjectRole.userProjectRole;
 
     @Override
     public Page<Project> searchProjects(Long userId, ProjectSearchCondition searchCondition, Pageable pageable) {
