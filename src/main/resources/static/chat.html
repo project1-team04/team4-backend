@@ -32,8 +32,8 @@
 
 <script>
     // 이슈 ID 설정 (예시로 101을 사용, 이슈 진입할때 따로 저장후에 기입)
-    const issueId = 101;
-    const socket = new WebSocket(`ws://localhost:8081/chat/${issueId}`);
+    const issueId = 102;
+    const socket = new WebSocket(`ws://localhost:8080/chat/${issueId}`);
 
     // 서버에서 메시지가 도착하면 처리하는 부분
     socket.onmessage = function(event) {
@@ -60,7 +60,7 @@
     function displayMessage(message) {
         const chatBox = document.getElementById('chatBox');
         const newMessage = document.createElement('div');
-        newMessage.textContent = `${message.sender}: ${message.content}`;
+        newMessage.textContent = `${message.sender}: ${message.content}, ${message.readBy}`;
         chatBox.appendChild(newMessage);
         chatBox.scrollTop = chatBox.scrollHeight; // 새 메시지가 오면 자동으로 스크롤 맨 아래로
     }

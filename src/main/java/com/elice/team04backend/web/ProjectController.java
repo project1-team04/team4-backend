@@ -72,7 +72,6 @@ public class ProjectController {
     }
 
     @Operation(summary = "단일 프로젝트 수정", description = "단일 프로젝트를 수정합니다.")
-    @PreAuthorize("hasRole('MANAGER')")
     @PatchMapping
     public ResponseEntity<ProjectResponseDto> patchProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -83,7 +82,6 @@ public class ProjectController {
     }
 
     @Operation(summary = "단일 프로젝트 삭제", description = "단일 프로젝트를 삭제합니다.")
-    @PreAuthorize("hasRole('MANAGER')")
     @DeleteMapping
     public ResponseEntity<Void> deleteProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
