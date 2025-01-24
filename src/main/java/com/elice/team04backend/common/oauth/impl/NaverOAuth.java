@@ -1,4 +1,4 @@
-package com.elice.team04backend.service.impl;
+package com.elice.team04backend.common.oauth.impl;
 
 import com.elice.team04backend.common.client.NaverTokenFeignClient;
 import com.elice.team04backend.common.client.NaverUserInfoFeignClient;
