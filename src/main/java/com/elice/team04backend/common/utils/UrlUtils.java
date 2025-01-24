@@ -13,6 +13,7 @@ public class UrlUtils {
             "/api/auth/naver/login/**",
             "/swagger-ui/**",
             "/api-docs/**",
-            "/api/accept/**"
+            "/api/accept/**",
+            "/api/messages/**"
     };
 }

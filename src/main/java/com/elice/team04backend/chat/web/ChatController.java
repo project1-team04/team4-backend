@@ -34,10 +34,12 @@ public class ChatController {
 
     @Operation(summary = "채팅읽었다고 처리하기", description = "로그인되어있는 유저가 해당 이슈의 채팅을 읽음 처리 합니다")
     @GetMapping("/read/{issueId}")
-    public ResponseEntity<?> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId) {
-        int userId = 1;
-        String username = "정태승";
-        chatService.readChat(Integer.parseInt(issueId), userId, username);
+    public ResponseEntity<?> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Long userId = userDetails.getUserId();
+        String userName = userDetails.getUsername();
+        System.out.println(userName);
+        System.out.println(userId);
+        chatService.readChat(Integer.parseInt(issueId), userId.intValue(), userName);
 
         return ResponseEntity.ok().build();
     }
