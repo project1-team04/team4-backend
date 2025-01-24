@@ -11,7 +11,7 @@ import java.util.List;
 public interface IssueService {
     IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto);
     IssueResponseDto getIssueById(Long issueId);
-    List<IssueResponseDto> getIssueByProjectId(Long projectId);
+    //List<IssueResponseDto> getIssueByProjectId(Long projectId);
     List<IssueResponseDto> getIssueByCondition(Long projectId, IssueSearchCondition condition);
     IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto);
     void deleteIssue(Long issueId);
