@@ -15,16 +15,12 @@ public class OAuthProperty {
 
     @Data
     public static class Google {
-        private Client client;
+        private String oauthUri;
+        private String clientId;
+        private String clientSecret;
         private String accessScope;
-        private String callbackUri;
+        private String redirectUri;
         private String grantType;
-
-        @Data
-        public static class Client {
-            private String id;
-            private String secret;
-        }
     }
 
     @Data
@@ -37,6 +33,7 @@ public class OAuthProperty {
 
     @Data
     public static class Naver {
+        private String oauthUri;
         private String clientId;
         private String clientSecret;
         private String redirectUri;

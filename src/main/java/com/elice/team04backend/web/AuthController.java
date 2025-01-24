@@ -133,11 +133,13 @@ public class AuthController {
     @GetMapping(value = "/{socialLoginType}/login/callback")
     public ResponseEntity<?> socialLoginCallback(
             @PathVariable(name = "socialLoginType") String socialLoginPath,
-            @RequestParam(name = "authCode") String authCode,
+            @RequestParam(name = "code") String authCode,
+            @RequestParam(name = "state", required = false) String state,
             HttpServletResponse response){
         log.info(">> 소셜 로그인 API 서버로부터 받은 인가 code : {}", authCode);
+        log.info(">> 소셜 로그인 API 서버로부터 받은 state : {}", state);
         SocialLoginType socialLoginType = SocialLoginType.valueOf(socialLoginPath.toUpperCase());
-        AccessTokenResponseDto accessTokenResponseDto = oAuthService.oAuthLoginOrJoin(socialLoginType, authCode, response);
+        AccessTokenResponseDto accessTokenResponseDto = oAuthService.oAuthLoginOrJoin(socialLoginType, authCode, state, response);
         return ResponseEntity.ok(accessTokenResponseDto);
     }
 

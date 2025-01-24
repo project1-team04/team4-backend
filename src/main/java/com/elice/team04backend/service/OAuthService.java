@@ -7,5 +7,5 @@ import jakarta.servlet.http.HttpServletResponse;
 public interface OAuthService {
     String accessRequest(SocialLoginType socialLoginType);
 
-    AccessTokenResponseDto oAuthLoginOrJoin(SocialLoginType socialLoginType, String authCode, HttpServletResponse response);
+    AccessTokenResponseDto oAuthLoginOrJoin(SocialLoginType socialLoginType, String authCode, String state, HttpServletResponse response);
 }
