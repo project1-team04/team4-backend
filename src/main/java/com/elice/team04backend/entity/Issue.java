@@ -42,6 +42,9 @@ public class Issue extends BaseEntity {
     @JoinColumn(name = "reporter_user_id", nullable = false)
     private User reporter;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "issue_key")
     private String issueKey;
 
@@ -61,10 +64,7 @@ public class Issue extends BaseEntity {
     public void update(IssueUpdateDto issueUpdateDto) {
         this.description = issueUpdateDto.getDescription();
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
-    }
-
-    public void updateIssueKey(String issueKey) {
-        this.issueKey = issueKey;
+        this.name = issueUpdateDto.getName();
     }
 
     public void addIssueImages(IssueImage issueImage) {
@@ -84,6 +84,7 @@ public class Issue extends BaseEntity {
                 .reporterUserId(this.getReporter().getId())
                 .issueKey(this.getIssueKey())
                 .description(this.getDescription())
+                .name(this.getName())
                 .troubleShooting(this.getTroubleShooting())
                 .status(this.getStatus())
                 .build();

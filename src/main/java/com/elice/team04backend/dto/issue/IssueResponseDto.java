@@ -15,6 +15,7 @@ public class IssueResponseDto {
     private Long assigneeUserId;
     private Long reporterUserId;
     private String issueKey;
+    private String name;
     private String description;
     private String troubleShooting;
     private IssueStatus status;

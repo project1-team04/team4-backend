@@ -1,6 +1,7 @@
 package com.elice.team04backend.common.filter;
 
 import com.elice.team04backend.common.utils.JwtTokenProvider;
+import com.elice.team04backend.common.utils.UrlUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +13,7 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Arrays;
 
 /*
 Jwt 검증 및 SpringContext에 인증 객체 등록
@@ -21,16 +22,6 @@ Jwt 검증 및 SpringContext에 인증 객체 등록
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final List<String> NO_AUTH_PATHS = List.of(
-            "/api/auth/login",
-            "/api/auth/signup",
-            "/api/auth/verify-email",
-            "/api/auth/verify",
-            "/api/auth/refresh-token",
-            "/swagger-ui.html",
-            "/api/auth/refresh-token",
-            "/api/accept/**"
-    );
 
     public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
         this.jwtTokenProvider = jwtTokenProvider;
@@ -39,11 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
-
-        // AntPathMatcher를 사용하여 패턴 매칭 처리
         AntPathMatcher pathMatcher = new AntPathMatcher();
-        return NO_AUTH_PATHS.stream().anyMatch(authPath -> pathMatcher.match(authPath, path)) ||
-                pathMatcher.match("/swagger-ui/**", path) || pathMatcher.match("/api-docs/**", path) || pathMatcher.match("/api/accept/**", path);
+        return Arrays.stream(UrlUtils.PermittedUrl).anyMatch(authPath -> pathMatcher.match(authPath, path));
     }
 
     @Override

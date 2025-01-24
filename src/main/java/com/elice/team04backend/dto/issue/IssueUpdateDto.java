@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IssueUpdateDto {
+    private String name;
     private String description;
     private String troubleShooting;
     private IssueStatus status;
