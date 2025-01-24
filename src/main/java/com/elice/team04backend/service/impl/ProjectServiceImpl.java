@@ -98,33 +98,41 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private String generatedProjectKey(ProjectRequestDto projectRequestDto) {
-        StringBuilder sb = new StringBuilder();
-        String[] words = projectRequestDto.getName().toUpperCase().split(" ");
+        StringBuilder baseKeyBuilder = new StringBuilder();
+        String[] words = projectRequestDto.getName().trim().toUpperCase().split(" ");
 
         for (String word : words) {
             char firstChar = word.charAt(0);
             if (Character.isLetter(firstChar)) {
-                sb.append(firstChar);
+                baseKeyBuilder.append(firstChar);
             }
         }
 
-        if (sb.isEmpty()) {
+        if (baseKeyBuilder.isEmpty()) {
             throw new CustomException(ErrorCode.PROJECT_KEY_CREATE_FAILED);
         }
 
-        String baseKey = sb.toString();
+        String baseKey = baseKeyBuilder.toString();
         String projectKey = baseKey;
-        int attempt = 1;
+        int attempt = 0;
 
         while (projectRepository.existsByProjectKey(projectKey)) {
-            char randomChar = (char) ('A' + (int) (Math.random() * 26));
-            projectKey = baseKey + randomChar;
-            if (attempt++ > 10) {
+            projectKey = baseKey + generateSuffix(attempt++);
+            if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
             }
         }
-
         return projectKey;
+    }
+
+    private String generateSuffix(int attempt) {
+        StringBuilder suffixBuilder = new StringBuilder();
+        do {
+            suffixBuilder.append((char) ('A' + (attempt % 26))); // A ~ Z까지 반복
+            attempt /= 26; // 자리수 증가
+        } while (attempt > 0);
+
+        return suffixBuilder.reverse().toString(); // 예: A ~ Z 다음  AA, AB, ... 순으로 프로젝트 키 생성
     }
 
     @Override
@@ -155,32 +163,30 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private String updateProjectKey(ProjectUpdateDto projectUpdateDto) {
-        StringBuilder sb = new StringBuilder();
-        String[] words = projectUpdateDto.getName().toUpperCase().split(" ");
+        StringBuilder baseKeyBuilder = new StringBuilder();
+        String[] words = projectUpdateDto.getName().trim().toUpperCase().split(" ");
 
         for (String word : words) {
             char firstChar = word.charAt(0);
             if (Character.isLetter(firstChar)) {
-                sb.append(firstChar);
+                baseKeyBuilder.append(firstChar);
             }
         }
 
-        if (sb.isEmpty()) {
+        if (baseKeyBuilder.isEmpty()) {
             throw new CustomException(ErrorCode.PROJECT_KEY_CREATE_FAILED);
         }
 
-        String baseKey = sb.toString();
+        String baseKey = baseKeyBuilder.toString();
         String projectKey = baseKey;
-        int attempt = 1;
+        int attempt = 0;
 
         while (projectRepository.existsByProjectKey(projectKey)) {
-            char randomChar = (char) ('A' + (int) (Math.random() * 26));
-            projectKey = baseKey + randomChar;
-            if (attempt++ > 10) {
+            projectKey = baseKey + generateSuffix(attempt++);
+            if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
             }
         }
-
         return projectKey;
     }
 
