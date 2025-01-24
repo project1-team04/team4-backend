@@ -46,17 +46,17 @@ public class IssueController {
         return ResponseEntity.status(HttpStatus.CREATED).body(imageUrl);
     }
 
-    @Operation(summary = "이슈 조회", description = "프로젝트에 속해있는 모든 이슈를 조회하는 기능입니다.")
-    @GetMapping
-    public ResponseEntity<List<IssueResponseDto>> getIssuesByProject(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId) {
-        List<IssueResponseDto> issueResponseDtos = issueService.getIssueByProjectId(projectId);
-        return ResponseEntity.ok(issueResponseDtos);
-    }
+//    @Operation(summary = "이슈 조회", description = "프로젝트에 속해있는 모든 이슈를 조회하는 기능입니다.")
+//    @GetMapping
+//    public ResponseEntity<List<IssueResponseDto>> getIssuesByProject(
+//            @AuthenticationPrincipal UserDetailsImpl userDetails,
+//            @RequestParam("projectId") Long projectId) {
+//        List<IssueResponseDto> issueResponseDtos = issueService.getIssueByProjectId(projectId);
+//        return ResponseEntity.ok(issueResponseDtos);
+//    }
 
     @Operation(summary = "이슈 조건 검색", description = "프로젝트에 속해있는 이슈를 조건 검색하는 기능입니다.")
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<List<IssueResponseDto>> getIssuesByCondition(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam("projectId") Long projectId,

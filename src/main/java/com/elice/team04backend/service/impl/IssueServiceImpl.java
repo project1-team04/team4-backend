@@ -90,14 +90,14 @@ public class IssueServiceImpl implements IssueService {
         return findedIssue.from();
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<IssueResponseDto> getIssueByProjectId(Long projectId) {
-        return issueRepository.findByProjectId(projectId)
-                .stream()
-                .map(Issue::from)
-                .collect(Collectors.toList());
-    }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<IssueResponseDto> getIssueByProjectId(Long projectId) {
+//        return issueRepository.findByProjectId(projectId)
+//                .stream()
+//                .map(Issue::from)
+//                .collect(Collectors.toList());
+//    }
 
     @Override
     @Transactional(readOnly = true)
