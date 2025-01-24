@@ -10,6 +10,9 @@ public enum ErrorCode {
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", "지원하지 않는 HTTP 메서드입니다. 요청 방식을 확인해주세요."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버에서 알 수 없는 오류가 발생했습니다."),
 
+    // Auth Errors
+    INVALID_OAUTH_TYPE(HttpStatus.BAD_REQUEST, "INVALID_OAUTH_TYPE", "잘못된 소셜 로그인 타입입니다."),
+
     // Key Errors
     PROJECT_KEY_CREATE_FAILED(HttpStatus.CONFLICT, "PROJECT_KEY_CREATE_FAILED", "프로젝트 키 생성에 실패했습니다. 프로젝트는 영문으로 시작해야 합니다."),
 

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -143,6 +144,8 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
 
+        checkRole(userId, projectId);
+
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
@@ -201,6 +204,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void deleteProject(Long userId, Long projectId) {
+        checkRole(userId, projectId);
+
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
 
@@ -334,5 +339,15 @@ public class ProjectServiceImpl implements ProjectService {
         userProjectRoleRepository.save(currentManagerRole);
         userProjectRoleRepository.save(newManagerRole);
     }
+
+    private void checkRole(Long userId, Long projectId) {
+        UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+        if (userProjectRole.getRole() == Role.MEMBER) {
+            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
+        }
+    }
+
 
 }
