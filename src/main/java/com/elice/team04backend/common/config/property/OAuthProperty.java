@@ -37,6 +37,7 @@ public class OAuthProperty {
 
     @Data
     public static class Naver {
+        private String oauthUri;
         private String clientId;
         private String clientSecret;
         private String redirectUri;
