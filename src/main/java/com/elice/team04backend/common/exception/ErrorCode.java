@@ -11,7 +11,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR", "서버에서 알 수 없는 오류가 발생했습니다."),
 
     // Key Errors
-    PROJECT_KEY_CREATE_FAILED(HttpStatus.CONFLICT, "PROJECT_KEY_CREATE_FAILED", "프로젝트 키 생성에 실패했습니다. 다른 프로젝트명을 사용해주세요."),
+    PROJECT_KEY_CREATE_FAILED(HttpStatus.CONFLICT, "PROJECT_KEY_CREATE_FAILED", "프로젝트 키 생성에 실패했습니다. 프로젝트는 영문으로 시작해야 합니다."),
 
     // User Errors
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "해당 유저를 찾을 수 없습니다."),
@@ -21,7 +21,7 @@ public enum ErrorCode {
 
     // Project Errors
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PROJECT_NOT_FOUND", "해당 프로젝트를 찾을 수 없습니다."),
-    PROJECT_CREATE_FAILED(HttpStatus.BAD_REQUEST, "PROJECT_CREATE_FAILED", "프로젝트 생성에 실패했습니다. 요청 정보를 확인해주세요."),
+    PROJECT_CREATE_FAILED(HttpStatus.BAD_REQUEST, "PROJECT_CREATE_FAILED", "프로젝트 생성을 실패했습니다. 다른 프로젝트명을 사용해주세요."),
     USER_NOT_IN_PROJECT(HttpStatus.FORBIDDEN, "USER_NOT_IN_PROJECT", "해당 유저는 프로젝트에 속해 있지 않습니다."),
     PROJECT_USERS_NOT_FOUND(HttpStatus.NOT_FOUND,"PROJECT_USERS_NOT_FOUND","해당 프로젝트에 연관된 유저가 없습니다."),
 
