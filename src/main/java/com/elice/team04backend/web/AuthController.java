@@ -34,7 +34,7 @@ public class AuthController {
     private final OAuthService oAuthService;
 
     @Operation(summary = "일반 이메일 로그인 요청 (AT X)", security = {},description = "일반 이메일 로그인을 합니다.")
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid SignInRequestDto signInRequestDto) {
         // Swagger 용. 실제 구현은 Filter에 존재
         return ResponseEntity.ok().build();
