@@ -1,13 +1,14 @@
 package com.elice.team04backend.chat.service.impl;
 
 import com.elice.team04backend.chat.entity.Message;
+import com.elice.team04backend.chat.handler.ChatWebSocketHandler;
 import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.elice.team04backend.chat.service.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import java.util.HashSet;
-import java.util.List;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -24,18 +25,17 @@ public class ChatServiceImpl implements ChatService {
         Iterable<Message> messages = chatMessageRepository.findByIssueId(issueId);
 
         for (Message message : messages) {
-            // 본인이 쓴 글은 패스
+            // 본인이 보낸 메시지는 건너뜀
             if (message.getUserId() == userId) {
-                System.out.println("작성자는 읽을 수 없습니다: " + message.getId());
                 continue;
             }
 
+            // 이미 읽은 메시지는 건너뜀
             if (message.getReadById() != null && message.getReadById().contains(userId)) {
-                // 이미 읽은 메시지는 패스
-                System.out.println("이미 읽은 메시지: " + message.getId());
                 continue;
             }
 
+            // 읽음 처리
             if (message.getReadById() == null) {
                 message.setReadById(new HashSet<>());
             }
@@ -49,8 +49,6 @@ public class ChatServiceImpl implements ChatService {
             message.getReadBy().add(userName);
             // 메시지 업데이트
             chatMessageRepository.save(message);
-
-            System.out.println("잘 처리가 되었다");
         }
     }
 
