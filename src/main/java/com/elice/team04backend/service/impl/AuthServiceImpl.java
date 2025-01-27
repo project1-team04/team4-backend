@@ -167,6 +167,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public Boolean validateEmail(ValidateEmailRequestDto validateEmailRequestDto) {
+        return userRepository.existsByEmail(validateEmailRequestDto.email());
+    }
+
+    @Override
     public void confirmVerificationCode(ConfirmEmailRequestDto confirmEmailRequestDto) {
         String email = confirmEmailRequestDto.email();
         String savedVerificationCode = redisDAO.getValues(email);
