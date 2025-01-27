@@ -40,15 +40,11 @@ public class ChatController {
 
     @Operation(summary = "채팅읽었다고 처리하기", description = "로그인되어있는 유저가 해당 이슈의 채팅을 읽음 처리 합니다")
     @GetMapping("/read/{issueId}")
-    public ResponseEntity<?> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public Iterable<Message> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getUserId();
         Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
         String userName = user.get().getUsername();
 
-        System.out.println(userId);
-        System.out.println(userName);
-
-        chatService.readChat(Integer.parseInt(issueId), userId.intValue(), userName);
-        return ResponseEntity.ok().build();
+        return chatService.readChat(Integer.parseInt(issueId), userId.intValue(), userName);
     }
 }

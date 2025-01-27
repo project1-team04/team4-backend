@@ -11,8 +11,9 @@ public class UrlUtils {
             "/api/auth/kakao/login/**",
             "/api/auth/google/login/**",
             "/api/auth/naver/login/**",
+            "/api/auth/validate-email",
             "/swagger-ui/**",
             "/api-docs/**",
-            "/api/accept/**",
+            "/api/accept/**"
     };
 }
