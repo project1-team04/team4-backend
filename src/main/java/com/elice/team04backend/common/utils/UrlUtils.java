@@ -14,6 +14,6 @@ public class UrlUtils {
             "/api/auth/validate-email",
             "/swagger-ui/**",
             "/api-docs/**",
-            "/api/accept/**",
+            "/api/accept/**"
     };
 }
