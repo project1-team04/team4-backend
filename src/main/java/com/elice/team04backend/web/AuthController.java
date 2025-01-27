@@ -40,7 +40,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "이메일 인증 코드 발급 요청 (AT X)", security = {},description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
+    @Operation(summary = "이메일 인증 코드 발급 요청", security = {},description = "이메일 인증을 위한 인증 코드를 발급 요청합니다.")
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@RequestBody @Valid VerifyEmailRequestDto verifyEmailRequestDto) {
         authService.verifyEmail(verifyEmailRequestDto);
@@ -52,6 +52,12 @@ public class AuthController {
     public ResponseEntity<?> confirmVerificationCode(@RequestBody @Valid ConfirmEmailRequestDto confirmEmailRequestDto) {
         authService.confirmVerificationCode(confirmEmailRequestDto);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "이메일 가입 여부 확인", description = "이메일을 입력하고 해당 이메일이 가입된 이메일인지 확인합니다. true인 경우, 이미 가입된 이메일입니다.")
+    @PostMapping("/validate-email")
+    public ResponseEntity<Boolean> validateEmail(@RequestBody @Valid ValidateEmailRequestDto validateEmailRequestDto) {
+        return ResponseEntity.ok(authService.validateEmail(validateEmailRequestDto));
     }
 
     @Operation(summary = "비밀번호 찾기(임시 비밀번호) 요청 (AT X)", description = "이메일을 입력하고 해당 이메일로 임시 비밀번호를 전송합니다.")
