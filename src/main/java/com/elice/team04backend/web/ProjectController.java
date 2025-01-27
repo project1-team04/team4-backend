@@ -162,6 +162,26 @@ public class ProjectController {
         projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
         return ResponseEntity.ok().build();
     }
+    //////////TEST////////////
+    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
+    @PostMapping("/invite-users")
+    public ResponseEntity<Void> inviteUsersWithQueryParams(
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("emails") List<String> emails) {
+        projectService.inviteUsers(projectId, emails);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "하나의 유저를 프로젝트에 초대(QueryParams)", description = "하나의 유저를 프로젝트에 초대합니다.(QueryParams)")
+    @PostMapping("/invite-single-user")
+    public ResponseEntity<Void> inviteSingleUserWithQueryParams(
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("email") String email) {
+        projectService.inviteUsers(projectId, List.of(email));
+        return ResponseEntity.ok().build();
+    }
+
+    //////////TEST////////////
 
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")
