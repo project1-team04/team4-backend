@@ -47,6 +47,12 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "이메일 가입 여부 확인", description = "이메일을 입력하고 해당 이메일이 가입된 이메일인지 확인합니다. true인 경우, 이미 가입된 이메일입니다.")
+    @PostMapping("/validate-email")
+    public ResponseEntity<Boolean> validateEmail(@RequestBody @Valid ValidateEmailRequestDto validateEmailRequestDto) {
+        return ResponseEntity.ok(authService.validateEmail(validateEmailRequestDto));
+    }
+
     @Operation(summary = "비밀번호 찾기(임시 비밀번호) 요청", description = "이메일을 입력하고 해당 이메일로 임시 비밀번호를 전송합니다.")
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordRequestDto resetPasswordRequestDto) {

@@ -19,4 +19,6 @@ public interface AuthService {
     void changePassword(Long userId, ChangePasswordRequestDto changePasswordRequestDto);
 
     void deactivateAccount(Long userId, HttpServletRequest request, HttpServletResponse response);
+
+    Boolean validateEmail(ValidateEmailRequestDto validateEmailRequestDto);
 }
