@@ -3,10 +3,7 @@ package com.elice.team04backend.service.impl;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
-import com.elice.team04backend.dto.project.ProjectRequestDto;
-import com.elice.team04backend.dto.project.ProjectResponseDto;
-import com.elice.team04backend.dto.project.ProjectSearchResponseDto;
-import com.elice.team04backend.dto.project.ProjectUpdateDto;
+import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
@@ -14,6 +11,10 @@ import com.elice.team04backend.service.ProjectService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -40,27 +43,58 @@ public class ProjectServiceImpl implements ProjectService {
     private final JavaMailSender mailSender;
     private final IssueRepository issueRepository;
 
-//    @Transactional(readOnly = true)
-//    @Override
-//    public List<ProjectResponseDto> getProjectsByUser(Long userId, int page, int size) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
-//        return projectPage.stream()
-//                .map(Project::from)
-//                .toList();
-//    }
+    @Qualifier("task")
+    private final Executor task;
 
+    /**
+     * TODO CachePut 사용할때 ProjectTotalResponseDto 와 projectResponseDto 충돌 해결
+     * TODO 캐시 키 null값 들어가는거 해결
+     */
+
+    @Cacheable(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Transactional(readOnly = true)
-    public ProjectSearchResponseDto getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
+    @Override
+    public ProjectTotalResponseDto getProjectsByUser(Long userId, int page, int size) {
+        log.info("userId: {}, page: {}, size: {}", userId, page, size);
         Pageable pageable = PageRequest.of(page, size);
-        Page<Project> projectPage = projectRepository.searchProjects(userId, condition, pageable);
+
+        Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
 
         List<ProjectResponseDto> projectResponseDtos = projectPage.stream()
                 .map(Project::from)
                 .toList();
 
-        long totalProjects = projectRepository.countProjectsByUserId(userId);
-        return new ProjectSearchResponseDto(projectResponseDtos, projectPage.getTotalElements(), totalProjects);
+        return new ProjectTotalResponseDto(projectResponseDtos, projectPage.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectSearchResponseDto getProjectByCondition(Long userId, ProjectSearchCondition condition, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        CompletableFuture<List<Project>> asyncProjects = CompletableFuture.supplyAsync(() -> {
+            log.info("condition asyncProjects: {}", Thread.currentThread().getName());
+            return projectRepository.fetchProjects(userId, condition, pageable);
+        }, task);
+
+        CompletableFuture<Long> asyncProjectsCnt = CompletableFuture.supplyAsync(() -> {
+            log.info("condition asyncProjectsCnt: {}", Thread.currentThread().getName());
+            return projectRepository.fetchProjectCount(userId, condition);
+        }, task);
+
+        CompletableFuture.allOf(asyncProjects, asyncProjectsCnt).join();
+
+        try {
+            List<Project> projects = asyncProjects.get();
+            Long total = asyncProjectsCnt.get(); // 전체 프로젝트 수
+
+            List<ProjectResponseDto> projectResponseDtos = projects.stream()
+                    .map(Project::from)
+                    .toList();
+
+            return new ProjectSearchResponseDto(projectResponseDtos, (long) projects.size(), total); // projects.size()는 페이지 내 항목 수
+        } catch (Exception e) {
+            throw new RuntimeException("프로젝트 병렬 처리 실패", e);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -71,6 +105,7 @@ public class ProjectServiceImpl implements ProjectService {
         return findedProject.from();
     }
 
+    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
     public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
         String projectKey = generatedProjectKey(projectRequestDto);
@@ -119,10 +154,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         String baseKey = baseKeyBuilder.toString();
+        List<String> existingKeys = projectRepository.findAllProjectKeysByPrefix(baseKey);
         String projectKey = baseKey;
         int attempt = 0;
 
-        while (projectRepository.existsByProjectKey(projectKey)) {
+        while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
             if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
@@ -141,6 +177,7 @@ public class ProjectServiceImpl implements ProjectService {
         return suffixBuilder.reverse().toString(); // 예: A ~ Z 다음  AA, AB, ... 순으로 프로젝트 키 생성
     }
 
+    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
     public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
 
@@ -186,10 +223,11 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         String baseKey = baseKeyBuilder.toString();
+        List<String> existingKeys = projectRepository.findAllProjectKeysByPrefix(baseKey);
         String projectKey = baseKey;
         int attempt = 0;
 
-        while (projectRepository.existsByProjectKey(projectKey)) {
+        while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
             if (attempt > 1000) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
@@ -202,6 +240,7 @@ public class ProjectServiceImpl implements ProjectService {
         issueRepository.bulkUpdateIssueKeys(project.getId(), oldProjectKey, newProjectKey);
     }
 
+    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
     public void deleteProject(Long userId, Long projectId) {
         checkRole(userId, projectId);
@@ -248,7 +287,7 @@ public class ProjectServiceImpl implements ProjectService {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
         String content = String.format(
-                "<p>안녕하세요,</p>" +
+                        "<p>안녕하세요,</p>" +
                         "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
                         "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
                         "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +

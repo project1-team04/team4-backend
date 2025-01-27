@@ -44,26 +44,26 @@ public class ProjectController {
     }
 
     @Operation(summary = "로그인 유저와 관련된 프로젝트 조건 검색", description = "로그인 유저와 관련된 모든 프로젝트를 조건에 따라 조회합니다.")
-    @GetMapping
+    @GetMapping("/search")
     public ResponseEntity<ProjectSearchResponseDto> getProjectByCondition(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size,
             @RequestParam(name = "condition", required = false) String condition) {
         ProjectSearchCondition searchCondition = new ProjectSearchCondition(condition);
-        ProjectSearchResponseDto responseDto = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
-        return ResponseEntity.ok(responseDto);
+        ProjectSearchResponseDto projectSearchResponseDto = projectService.getProjectByCondition(userDetails.getUserId(), searchCondition, page, size);
+        return ResponseEntity.ok(projectSearchResponseDto);
     }
 
-//    @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
-//    @GetMapping
-//    public ResponseEntity<List<ProjectResponseDto>> getUserProjects(
-//            @AuthenticationPrincipal UserDetailsImpl userDetails,
-//            @RequestParam(name = "page", defaultValue = "0") int page,
-//            @RequestParam(name = "size", defaultValue = "10") int size) {
-//        List<ProjectResponseDto> projectResponseDtos = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
-//        return ResponseEntity.ok(projectResponseDtos);
-//    }
+    @Operation(summary = "로그인 유저와 관련된 프로젝트 조회", description = "로그인 유저와 관련된 모든 프로젝트를 조회합니다.")
+    @GetMapping
+    public ResponseEntity<ProjectTotalResponseDto> getUserProjects(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        ProjectTotalResponseDto projectResponseDto = projectService.getProjectsByUser(userDetails.getUserId(), page, size);
+        return ResponseEntity.ok(projectResponseDto);
+    }
 
     @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
     @GetMapping("/users")
@@ -162,6 +162,26 @@ public class ProjectController {
         projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
         return ResponseEntity.ok().build();
     }
+    //////////TEST////////////
+    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
+    @PostMapping("/invite-users")
+    public ResponseEntity<Void> inviteUsersWithQueryParams(
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("emails") List<String> emails) {
+        projectService.inviteUsers(projectId, emails);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "하나의 유저를 프로젝트에 초대(QueryParams)", description = "하나의 유저를 프로젝트에 초대합니다.(QueryParams)")
+    @PostMapping("/invite-single-user")
+    public ResponseEntity<Void> inviteSingleUserWithQueryParams(
+            @RequestParam("projectId") Long projectId,
+            @RequestParam("email") String email) {
+        projectService.inviteUsers(projectId, List.of(email));
+        return ResponseEntity.ok().build();
+    }
+
+    //////////TEST////////////
 
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")

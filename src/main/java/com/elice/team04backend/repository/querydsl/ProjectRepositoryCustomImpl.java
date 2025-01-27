@@ -7,8 +7,6 @@ import com.elice.team04backend.entity.QUserProjectRole;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
@@ -27,10 +25,10 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
     QUserProjectRole userProjectRole = QUserProjectRole.userProjectRole;
 
     @Override
-    public Page<Project> searchProjects(Long userId, ProjectSearchCondition searchCondition, Pageable pageable) {
-        List<Project> projects = queryFactory
+    public List<Project> fetchProjects(Long userId, ProjectSearchCondition searchCondition, Pageable pageable) {
+        return queryFactory
                 .selectFrom(project)
-                .leftJoin(project.userProjectRoles, userProjectRole).fetchJoin()
+                .leftJoin(project.userProjectRoles, userProjectRole)
                 .where(
                         userIdEq(userId),
                         conditionContains(searchCondition.getCondition())
@@ -38,8 +36,11 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
+    }
 
-        long total = Optional.ofNullable(queryFactory
+    @Override
+    public Long fetchProjectCount(Long userId, ProjectSearchCondition searchCondition) {
+        return Optional.ofNullable(queryFactory
                 .select(project.count())
                 .from(project)
                 .leftJoin(project.userProjectRoles, userProjectRole)
@@ -49,7 +50,6 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
                 )
                 .fetchOne()
         ).orElse(0L);
-        return new PageImpl<>(projects, pageable, total);
     }
 
     private BooleanExpression userIdEq(Long userId) {

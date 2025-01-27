@@ -33,6 +33,9 @@ public class IssueServiceImpl implements IssueService {
     private final UserRepository userRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
 
+    /**
+     * TODO 이슈 수정시 프로젝트 캐싱 반영
+     */
     @Override
     public IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto) {
         User reporter = userRepository.findById(userId)
@@ -90,14 +93,14 @@ public class IssueServiceImpl implements IssueService {
         return findedIssue.from();
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<IssueResponseDto> getIssueByProjectId(Long projectId) {
-//        return issueRepository.findByProjectId(projectId)
-//                .stream()
-//                .map(Issue::from)
-//                .collect(Collectors.toList());
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public List<IssueResponseDto> getIssueByProjectId(Long projectId) {
+        return issueRepository.findByProjectId(projectId)
+                .stream()
+                .map(Issue::from)
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -107,7 +110,6 @@ public class IssueServiceImpl implements IssueService {
                 .map(Issue::from)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto) {
