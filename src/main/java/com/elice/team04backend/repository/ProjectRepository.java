@@ -15,11 +15,10 @@ import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long>, ProjectRepositoryCustom {
-    @EntityGraph(attributePaths = {"userProjectRoles"})
-    @Query("SELECT p FROM Project p WHERE p.id IN " +
-            "(SELECT upr.project.id FROM UserProjectRole upr WHERE upr.user.id = :userId)")
+    @Query("SELECT p FROM Project p " +
+            "JOIN UserProjectRole upr ON p.id = upr.project.id " +
+            "WHERE upr.user.id = :userId")
     Page<Project> findByUserId(@Param("userId") Long userId, Pageable pageable);
-    boolean existsByProjectKey(String projectKey);
     void deleteById(Long projectId);
     @Query("SELECT COUNT(p) FROM Project p " +
             "JOIN UserProjectRole upr ON p.id = upr.project.id " +
