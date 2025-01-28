@@ -283,6 +283,37 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
+    @Override
+    public ProjectUserInfoDto inviteSingleUsers(Long projectId, String email) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+            throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
+        }
+
+        if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+            throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
+        }
+
+        ProjectUserInfoDto projectUserInfoDto = new ProjectUserInfoDto();
+        projectUserInfoDto.setEmail(user.getEmail());
+        projectUserInfoDto.setName(user.getUsername());
+
+        String token = UUID.randomUUID().toString();
+        Invitation invitation = Invitation.builder()
+                .user(user)
+                .project(project)
+                .token(token)
+                .build();
+        invitationRepository.save(invitation);
+
+        sendInvitationEmail(project.getName(), email, token);
+        return projectUserInfoDto;
+    }
+
     private void sendInvitationEmail(String projectName, String email, String token) {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
