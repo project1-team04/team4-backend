@@ -32,4 +32,8 @@ public class UserProjectRole extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;
+
+    public void setRole(Role newRole) {
+        this.role = newRole;
+    }
 }

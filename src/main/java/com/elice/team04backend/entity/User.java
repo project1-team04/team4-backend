@@ -74,4 +74,23 @@ public class User extends BaseEntity {
         this.refreshToken = null;
         this.expirationAt = null;
     }
+    public void addReporterIssue(Issue issue) {
+        this.reporterIssues.add(issue);
+    }
+    public void addAssigneeIssue(Issue issue) {
+        this.assigneeIssues.add(issue);
+    }
+
+    public void changePassword(String newPassword){
+        this.password = newPassword;
+    }
+
+    public void patchProfile(String username, String profileImageUrl) {
+        this.username = username;
+        this.profileImage = profileImageUrl;
+    }
+
+    public void deactivateAccount() {
+        this.status = UserStatus.DELETED;
+    }
 }

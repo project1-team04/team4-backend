@@ -1,31 +1,35 @@
 package com.elice.team04backend.chat.handler;
 
+import com.elice.team04backend.chat.SessionRegistry;
 import com.elice.team04backend.chat.entity.Message;
 import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ObjectMapper objectMapper;
-    private final Map<Integer, Set<WebSocketSession>> sessionsByIssue = new ConcurrentHashMap<>();
+    private final RedisTemplate<String, Object> redisTemplate;
+    private static final String REDIS_SESSION_KEY_PREFIX = "chat:session:issue:";
 
-    public ChatWebSocketHandler(ChatMessageRepository chatMessageRepository) {
+    public ChatWebSocketHandler(
+            ChatMessageRepository chatMessageRepository,
+            RedisTemplate<String, Object> redisTemplate
+    ) {
         this.chatMessageRepository = chatMessageRepository;
+        this.redisTemplate = redisTemplate;
         this.objectMapper = new ObjectMapper();
-
-        // JavaTimeModule 등록
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
@@ -33,50 +37,68 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
-        System.out.println("------------------------------------------------");
-        System.out.println("받은 메시지 : " + payload);
-        System.out.println("------------------------------------------------");
-
-        // JSON -> MessageVo 객체 변환
         Message messageVo = objectMapper.readValue(payload, Message.class);
 
-        // 메시지에 시간 설정
         if (messageVo.getTimestamp() == null) {
             messageVo.setTimestamp(LocalDateTime.now());
         }
 
-        // 채팅 메시지 저장
         chatMessageRepository.save(messageVo);
 
-        // 이슈 ID를 통해 해당 이슈에 연결된 세션들 찾기
-        int issueId = messageVo.getIssueId();
-        Set<WebSocketSession> sessions = sessionsByIssue.computeIfAbsent(issueId, k -> new HashSet<>());
+        // Redis에서 해당 이슈의 모든 세션 ID를 가져와서 메시지 전송
+        String redisKey = REDIS_SESSION_KEY_PREFIX + messageVo.getIssueId();
+        //해당 이슈 ID와 관련된 모든 세션 ID를 Redis에서 가져온다
+        Set<Object> members = redisTemplate.opsForSet().members(redisKey);
+        Set<String> sessionIds = convertToStringSet(members);
 
-        System.out.println("브로드캐스트할 세션들: " + sessions.size() + "개 세션");
-
-        // 해당 이슈에 연결된 클라이언트들에게 메시지 브로드캐스트
-        for (WebSocketSession webSocketSession : sessions) {
-            if (webSocketSession.isOpen()) {
-                webSocketSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(messageVo)));
+        if (sessionIds != null) {
+            String messageJson = objectMapper.writeValueAsString(messageVo);
+            for (String sessionId : sessionIds) {
+                WebSocketSession webSocketSession = SessionRegistry.getSession(sessionId);
+                if (webSocketSession != null && webSocketSession.isOpen()) {
+                    webSocketSession.sendMessage(new TextMessage(messageJson));
+                }
             }
         }
+    }
+
+    private Set<String> convertToStringSet(Set<Object> objectSet) {
+        if (objectSet == null) {
+            return new HashSet<>();
+        }
+        return objectSet.stream()
+                .filter(obj -> obj != null)
+                .map(Object::toString)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
 
-        // 클라이언트가 연결되면 해당 이슈 ID를 URL에서 가져와 세션에 추가
-        String issueIdString = session.getUri().getPath().split("/")[2];  // 이슈 ID를 URL에서 가져오기
+        String issueIdString = session.getUri().getPath().split("/")[2];
         int issueId = Integer.parseInt(issueIdString);
+        String redisKey = REDIS_SESSION_KEY_PREFIX + issueId;
 
-        sessionsByIssue.computeIfAbsent(issueId, k -> new HashSet<>()).add(session);
+        // Redis에 세션 ID 저장
+        redisTemplate.opsForSet().add(redisKey, session.getId());
+
+        // 세션 레지스트리에 세션 저장
+        SessionRegistry.addSession(session.getId(), session);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) throws Exception {
-        // 연결 종료 시 세션을 해당 이슈 그룹에서 제거
-        sessionsByIssue.values().forEach(sessions -> sessions.remove(session));
+        String issueIdString = session.getUri().getPath().split("/")[2];
+        int issueId = Integer.parseInt(issueIdString);
+        String redisKey = REDIS_SESSION_KEY_PREFIX + issueId;
+
+        // Redis에서 세션 ID 제거
+        redisTemplate.opsForSet().remove(redisKey, session.getId());
+
+        // 세션 레지스트리에서 세션 제거
+        SessionRegistry.removeSession(session.getId());
+
         super.afterConnectionClosed(session, status);
     }
 }
