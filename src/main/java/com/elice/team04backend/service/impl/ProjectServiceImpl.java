@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 @Service
@@ -45,6 +46,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Qualifier("task")
     private final Executor task;
+
+    private static final int MAX_PROJECT_KEY_GENERATE_ATTEMPTS = 100;
 
     /**
      * TODO CachePut 사용할때 ProjectTotalResponseDto 와 projectResponseDto 충돌 해결
@@ -90,10 +93,14 @@ public class ProjectServiceImpl implements ProjectService {
             List<ProjectResponseDto> projectResponseDtos = projects.stream()
                     .map(Project::from)
                     .toList();
-
             return new ProjectSearchResponseDto(projectResponseDtos, (long) projects.size(), total); // projects.size()는 페이지 내 항목 수
-        } catch (Exception e) {
-            throw new RuntimeException("프로젝트 병렬 처리 실패", e);
+
+        } catch (ExecutionException e) {
+            throw new CustomException(ErrorCode.ASYNC_EXECUTION_FAILED);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new CustomException(ErrorCode.ASYNC_INTERRUPTED);
         }
     }
 
@@ -160,7 +167,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
-            if (attempt > 1000) {
+            if (attempt > MAX_PROJECT_KEY_GENERATE_ATTEMPTS) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
             }
         }
@@ -229,7 +236,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         while (existingKeys.contains(projectKey)) {
             projectKey = baseKey + generateSuffix(attempt++);
-            if (attempt > 1000) {
+            if (attempt > MAX_PROJECT_KEY_GENERATE_ATTEMPTS) {
                 throw new CustomException(ErrorCode.PROJECT_CREATE_FAILED);
             }
         }
@@ -318,7 +325,7 @@ public class ProjectServiceImpl implements ProjectService {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
         String content = String.format(
-                        "<p>안녕하세요,</p>" +
+                "<p>안녕하세요,</p>" +
                         "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
                         "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
                         "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +
