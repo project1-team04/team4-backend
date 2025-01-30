@@ -48,8 +48,11 @@ public enum ErrorCode {
     NO_MEMBER_TO_ASSIGN(HttpStatus.BAD_REQUEST, "NO_MEMBER_TO_ASSIGN", "새 관리자를 지정할 수 있는 멤버가 없습니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "이메일 전송에 실패했습니다."),
     NEW_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "NEW_MANAGER_REQUIRED", "마지막 관리자는 새로운 관리자를 지정해야 탈퇴할 수 있습니다."),
-    NEW_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "NEW_MANAGER_NOT_FOUND", "지정된 새 관리자를 찾을 수 없습니다.");
+    NEW_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "NEW_MANAGER_NOT_FOUND", "지정된 새 관리자를 찾을 수 없습니다."),
 
+    // Asynchronous Errors
+    ASYNC_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ASYNC_EXECUTION_FAILED", "비동기 작업 중 실행 오류 발생"),
+    ASYNC_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "ASYNC_INTERRUPTED", "비동기 작업이 중단됨");
 
     private final HttpStatus httpStatus;
     private final String codeName;

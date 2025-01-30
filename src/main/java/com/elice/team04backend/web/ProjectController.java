@@ -34,15 +34,6 @@ public class ProjectController {
     private final LabelService labelService;
     private final UserProjectRoleService userProjectRoleService;
 
-    @PreAuthorize("hasRole('MANAGER')")
-    @GetMapping("/test")
-    public ResponseEntity testProject(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId) {
-        log.info("{}", userDetails.getUserId());
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "로그인 유저와 관련된 프로젝트 조건 검색", description = "로그인 유저와 관련된 모든 프로젝트를 조건에 따라 조회합니다.")
     @GetMapping("/search")
     public ResponseEntity<ProjectSearchResponseDto> getProjectByCondition(
@@ -114,64 +105,65 @@ public class ProjectController {
     //라벨 관련 컨트롤러
 
     @Operation(summary = "라벨 추가", description = "특정 프로젝트에 라벨을 추가합니다.")
-    @PostMapping("/labels")
+    @PostMapping("/{projectId}/labels")
     public ResponseEntity<LabelResponseDto> postLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId,
+            @PathVariable("projectId") Long projectId,
             @Valid @RequestBody LabelRequestDto labelRequestDto) {
         LabelResponseDto labelResponseDto = labelService.postLabel(projectId, labelRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(labelResponseDto);
     }
 
     @Operation(summary = "라벨 조회", description = "특정 프로젝트의 모든 라벨을 조회합니다.")
-    @GetMapping("/labels")
+    @GetMapping("/{projectId}/labels")
     public ResponseEntity<List<LabelResponseDto>> getAllLabelsByProjectId(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId) {
+            @PathVariable("projectId") Long projectId) {
         List<LabelResponseDto> labelResponseDtos = labelService.getAllLabelsByProjectId(projectId);
         return ResponseEntity.ok(labelResponseDtos);
     }
 
     @Operation(summary = "라벨 수정", description = "특정 프로젝트의 라벨을 수정합니다.")
-    @PatchMapping("/labels")
+    @PatchMapping("/{projectId}/labels/{labelId}")
     public ResponseEntity<LabelResponseDto> patchLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("labelId") Long labelId,
+            @PathVariable("projectId") Long projectId,
+            @PathVariable("labelId") Long labelId,
             @Valid @RequestBody LabelUpdateDto labelUpdateDto) {
         LabelResponseDto labelResponseDto = labelService.patchLabel(labelId, labelUpdateDto);
         return ResponseEntity.ok(labelResponseDto);
     }
 
     @Operation(summary = "라벨 삭제", description = "특정 프로젝트의 라벨을 삭제합니다.")
-    @DeleteMapping("/labels")
+    @DeleteMapping("/{projectId}/labels/{labelId}")
     public ResponseEntity<Void> deleteLabel(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("labelId") Long labelId) {
+            @PathVariable("projectId") Long projectId,
+            @PathVariable("labelId") Long labelId) {
         labelService.deleteLabel(labelId);
         return ResponseEntity.noContent().build();
     }
 
     // 초대 및 탈퇴 관련 컨트롤러
 
-    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
-    @PostMapping("/invite")
-    public ResponseEntity<Void> inviteUsers(
-            @RequestParam("projectId") Long projectId,
-            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
-        return ResponseEntity.ok().build();
-    }
-
-    //////////TEST////////////
-    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
-    @PostMapping("/invite-users")
-    public ResponseEntity<Void> inviteUsersWithQueryParams(
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("emails") List<String> emails) {
-        projectService.inviteUsers(projectId, emails);
-        return ResponseEntity.ok().build();
-    }
+//    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
+//    @PostMapping("/invite")
+//    public ResponseEntity<Void> inviteUsers(
+//            @RequestParam("projectId") Long projectId,
+//            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
+//            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
+//    @PostMapping("/invite-users")
+//    public ResponseEntity<Void> inviteUsersWithQueryParams(
+//            @RequestParam("projectId") Long projectId,
+//            @RequestParam("emails") List<String> emails) {
+//        projectService.inviteUsers(projectId, emails);
+//        return ResponseEntity.ok().build();
+//    }
 
     @Operation(summary = "하나의 유저를 프로젝트에 초대(QueryParams)", description = "하나의 유저를 프로젝트에 초대합니다.(QueryParams)")
     @PostMapping("/invite-single-user")
@@ -182,7 +174,6 @@ public class ProjectController {
         return ResponseEntity.ok(projectUserInfoDto);
     }
 
-    //////////TEST////////////
 
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")

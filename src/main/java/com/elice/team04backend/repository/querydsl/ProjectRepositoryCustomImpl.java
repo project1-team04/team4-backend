@@ -40,7 +40,7 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
 
     @Override
     public Long fetchProjectCount(Long userId, ProjectSearchCondition searchCondition) {
-        return Optional.ofNullable(queryFactory
+        Long count = queryFactory
                 .select(project.count())
                 .from(project)
                 .leftJoin(project.userProjectRoles, userProjectRole)
@@ -48,8 +48,8 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
                         userIdEq(userId),
                         conditionContains(searchCondition.getCondition())
                 )
-                .fetchOne()
-        ).orElse(0L);
+                .fetchOne();
+        return count != null ? count : 0L;
     }
 
     private BooleanExpression userIdEq(Long userId) {

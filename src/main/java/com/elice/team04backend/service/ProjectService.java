@@ -3,7 +3,6 @@ package com.elice.team04backend.service;
 import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 
-import java.util.List;
 
 public interface ProjectService {
     ProjectTotalResponseDto getProjectsByUser(Long userId, int page, int size);
@@ -14,7 +13,7 @@ public interface ProjectService {
     void deleteProject(Long userId, Long projectId);
 
     // 초대 관련
-    void inviteUsers(Long projectId, List<String> emails);
+    //void inviteUsers(Long projectId, List<String> emails);
     ProjectUserInfoDto inviteSingleUsers(Long projectId, String email);
     void acceptInvitation(String token);
     void leaveProject(Long userId, Long projectId, Long newManagerId);
