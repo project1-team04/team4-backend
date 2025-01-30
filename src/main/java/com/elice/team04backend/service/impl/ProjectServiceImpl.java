@@ -261,34 +261,34 @@ public class ProjectServiceImpl implements ProjectService {
         projectRepository.deleteById(projectId);
     }
 
-    @Override
-    public void inviteUsers(Long projectId, List<String> emails) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
-
-        for (String email : emails) {
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-
-            if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
-                throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
-            }
-
-            if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
-                throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
-            }
-
-            String token = UUID.randomUUID().toString();
-            Invitation invitation = Invitation.builder()
-                    .user(user)
-                    .project(project)
-                    .token(token)
-                    .build();
-            invitationRepository.save(invitation);
-
-            sendInvitationEmail(project.getName(), email, token);
-        }
-    }
+//    @Override
+//    public void inviteUsers(Long projectId, List<String> emails) {
+//        Project project = projectRepository.findById(projectId)
+//                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+//
+//        for (String email : emails) {
+//            User user = userRepository.findByEmail(email)
+//                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+//
+//            if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+//                throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
+//            }
+//
+//            if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
+//                throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
+//            }
+//
+//            String token = UUID.randomUUID().toString();
+//            Invitation invitation = Invitation.builder()
+//                    .user(user)
+//                    .project(project)
+//                    .token(token)
+//                    .build();
+//            invitationRepository.save(invitation);
+//
+//            sendInvitationEmail(project.getName(), email, token);
+//        }
+//    }
 
     @Override
     public ProjectUserInfoDto inviteSingleUsers(Long projectId, String email) {

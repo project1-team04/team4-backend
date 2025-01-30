@@ -146,24 +146,24 @@ public class ProjectController {
 
     // 초대 및 탈퇴 관련 컨트롤러
 
-    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
-    @PostMapping("/invite")
-    public ResponseEntity<Void> inviteUsers(
-            @RequestParam("projectId") Long projectId,
-            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
-        return ResponseEntity.ok().build();
-    }
-
-    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
-    @PostMapping("/invite-users")
-    public ResponseEntity<Void> inviteUsersWithQueryParams(
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("emails") List<String> emails) {
-        projectService.inviteUsers(projectId, emails);
-        return ResponseEntity.ok().build();
-    }
+//    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
+//    @PostMapping("/invite")
+//    public ResponseEntity<Void> inviteUsers(
+//            @RequestParam("projectId") Long projectId,
+//            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
+//            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+//        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
+//    @PostMapping("/invite-users")
+//    public ResponseEntity<Void> inviteUsersWithQueryParams(
+//            @RequestParam("projectId") Long projectId,
+//            @RequestParam("emails") List<String> emails) {
+//        projectService.inviteUsers(projectId, emails);
+//        return ResponseEntity.ok().build();
+//    }
 
     @Operation(summary = "하나의 유저를 프로젝트에 초대(QueryParams)", description = "하나의 유저를 프로젝트에 초대합니다.(QueryParams)")
     @PostMapping("/invite-single-user")
