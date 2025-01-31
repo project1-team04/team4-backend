@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -146,25 +145,6 @@ public class ProjectController {
 
     // 초대 및 탈퇴 관련 컨트롤러
 
-//    @Operation(summary = "프로젝트에 유저 초대", description = "프로젝트에 유저를 초대합니다.")
-//    @PostMapping("/invite")
-//    public ResponseEntity<Void> inviteUsers(
-//            @RequestParam("projectId") Long projectId,
-//            @Valid @RequestBody ProjectInviteRequestDto projectInviteRequestDto,
-//            @AuthenticationPrincipal UserDetailsImpl userDetails) {
-//        projectService.inviteUsers(projectId, projectInviteRequestDto.getEmails());
-//        return ResponseEntity.ok().build();
-//    }
-//
-//    @Operation(summary = "프로젝트에 유저 초대(QueryParams)", description = "프로젝트에 유저를 초대합니다.(QueryParams)")
-//    @PostMapping("/invite-users")
-//    public ResponseEntity<Void> inviteUsersWithQueryParams(
-//            @RequestParam("projectId") Long projectId,
-//            @RequestParam("emails") List<String> emails) {
-//        projectService.inviteUsers(projectId, emails);
-//        return ResponseEntity.ok().build();
-//    }
-
     @Operation(summary = "하나의 유저를 프로젝트에 초대(QueryParams)", description = "하나의 유저를 프로젝트에 초대합니다.(QueryParams)")
     @PostMapping("/invite-single-user")
     public ResponseEntity<ProjectUserInfoDto> inviteSingleUserWithQueryParams(
@@ -173,7 +153,6 @@ public class ProjectController {
         ProjectUserInfoDto projectUserInfoDto = projectService.inviteSingleUsers(projectId, email);
         return ResponseEntity.ok(projectUserInfoDto);
     }
-
 
     @Operation(summary = "프로젝트 탈퇴", description = "유저가 프로젝트에서 탈퇴합니다.")
     @DeleteMapping("/leave")

@@ -19,7 +19,6 @@ public class IssueRepositoryCustomImpl implements IssueRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     QIssue issue = QIssue.issue;
 
-
     @Override
     public List<Issue> searchIssues(Long projectId, IssueSearchCondition searchCondition) {
         return queryFactory
