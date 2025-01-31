@@ -12,6 +12,7 @@ import com.elice.team04backend.service.FirebaseStorageService;
 import com.elice.team04backend.service.IssueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,9 +34,6 @@ public class IssueServiceImpl implements IssueService {
     private final UserRepository userRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
 
-    /**
-     * TODO 이슈 수정시 프로젝트 캐싱 반영
-     */
     @Override
     public IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto) {
         User reporter = userRepository.findById(userId)
