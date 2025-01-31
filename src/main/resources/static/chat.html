@@ -33,7 +33,9 @@
 <script>
     // 이슈 ID 설정 (예시로 102를 사용, 이슈 진입할 때 따로 저장 후에 기입)
     const issueId = 102;
-    //웹소켓 주소
+    const token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJuZXJvc3RhcmluQG5hdmVyLmNvbSIsInVzZXJJZCI6NCwidXNlcm5hbWUiOiLsnbTtg5zsoJUiLCJpYXQiOjE3MzgzMDExMDQsImV4cCI6MTczODMwMTcwNH0.8tewClzfRYBg1YQ3hZyZL85sDEYctfuFKbIHimsYblE";  // 로컬스토리지에서 토큰을 가져옵니다.
+
+    // 웹소켓 연결 시 Authorization 헤더에 토큰을 포함하는 방식
     const socket = new WebSocket(`ws://localhost:8080/chat/${issueId}`);
 
     // 서버에서 메시지가 도착하면 처리하는 부분
@@ -86,7 +88,13 @@
 
     // 페이지가 로드될 때 기존 메시지 불러오기
     window.onload = function() {
-        fetch(`/api/messages/${issueId}`)
+        fetch(`/api/messages/get/${issueId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,  // 토큰을 헤더에 추가
+                'Content-Type': 'application/json',
+            }
+        })
             .then(response => response.json())
             .then(messages => {
                 messages.forEach(message => {
@@ -119,45 +127,46 @@
         }
     };
 
-// 텍스트박스에 포커스가 갔을 때 메시지 읽음 처리
-document.getElementById('messageInput').addEventListener('focus', function() {
-    markAsRead();  // 텍스트박스에 커서가 들어갔을 때 읽음 처리 API 호출
-});
-
-// markAsRead 함수 정의
-function markAsRead() {
-    // 읽음 처리 API 호출
-    fetch(`/api/messages/read/${issueId}`, {
-        method: 'GET', // GET 요청을 사용 (예시로 GET을 사용)
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => response.json())
-    .then(updatedMessages => {
-        // 메시지 리스트를 업데이트
-        fetchAndUpdateMessages(updatedMessages); // 업데이트된 메시지 전달
-    })
-    .catch(error => console.error('Error marking messages as read:', error));
-}
-
-// 메시지를 읽음 처리 후, 업데이트된 메시지 리스트로 기존 메시지 업데이트
-function fetchAndUpdateMessages(updatedMessages) {
-    const chatBox = document.getElementById('chatBox');
-    const existingMessages = chatBox.getElementsByTagName('div');
-
-    // 기존 메시지들 중에서 ID가 일치하는 메시지를 찾아서 업데이트
-    updatedMessages.forEach(updatedMessage => {
-        for (let i = 0; i < existingMessages.length; i++) {
-            const existingMessage = existingMessages[i];
-            if (existingMessage.dataset.id == updatedMessage.id) {
-                // 읽은 사람 목록 업데이트
-                existingMessage.textContent = `${updatedMessage.sender}: ${updatedMessage.content}, 읽은 사람: ${updatedMessage.readBy.join(', ')}`;
-                break;
-            }
-        }
+    // 텍스트박스에 포커스가 갔을 때 메시지 읽음 처리
+    document.getElementById('messageInput').addEventListener('focus', function() {
+        markAsRead();  // 텍스트박스에 커서가 들어갔을 때 읽음 처리 API 호출
     });
-}
+
+    // markAsRead 함수 정의
+    function markAsRead() {
+        // 읽음 처리 API 호출
+        fetch(`/api/messages/read/${issueId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,  // 토큰을 헤더에 추가
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(updatedMessages => {
+            // 메시지 리스트를 업데이트
+            fetchAndUpdateMessages(updatedMessages); // 업데이트된 메시지 전달
+        })
+        .catch(error => console.error('Error marking messages as read:', error));
+    }
+
+    // 메시지를 읽음 처리 후, 업데이트된 메시지 리스트로 기존 메시지 업데이트
+    function fetchAndUpdateMessages(updatedMessages) {
+        const chatBox = document.getElementById('chatBox');
+        const existingMessages = chatBox.getElementsByTagName('div');
+
+        // 기존 메시지들 중에서 ID가 일치하는 메시지를 찾아서 업데이트
+        updatedMessages.forEach(updatedMessage => {
+            for (let i = 0; i < existingMessages.length; i++) {
+                const existingMessage = existingMessages[i];
+                if (existingMessage.dataset.id == updatedMessage.id) {
+                    // 읽은 사람 목록 업데이트
+                    existingMessage.textContent = `${updatedMessage.sender}: ${updatedMessage.content}, 읽은 사람: ${updatedMessage.readBy.join(', ')}`;
+                    break;
+                }
+            }
+        });
+    }
 </script>
 </body>
 </html>

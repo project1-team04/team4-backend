@@ -33,7 +33,7 @@ public class ChatController {
     private ChatService chatService;
 
     @Operation(summary = "채팅방 기록 불러오기", description = "디비에있는 채팅기록들을 issue_id로 가지고 옵니다")
-    @GetMapping("/{issueId}")
+    @GetMapping("/get/{issueId}")
     public Iterable<Message> selectMessages(@Parameter(description = "채팅 기록을 불러올 issue ID") @PathVariable String issueId) {
         return chatMessageRepository.findByIssueId(Integer.parseInt(issueId));
     }
