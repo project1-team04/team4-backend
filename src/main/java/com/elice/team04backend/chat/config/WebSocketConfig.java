@@ -26,6 +26,9 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         // WebSocket 경로를 "/chat/{issueId}"로 변경
         registry.addHandler(new ChatWebSocketHandler(chatMessageRepository, redisTemplate), "/api/chat/{issueId}")
-                .setAllowedOrigins("*");  // 모든 출처에서의 연결을 허용
+                .setAllowedOrigins(
+                        "http://localhost:3000",
+                        "http://34.22.102.28:8080"
+                );
     }
 }
