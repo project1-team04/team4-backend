@@ -4,6 +4,8 @@ import com.elice.team04backend.common.constant.Provider;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.constant.UserStatus;
 import com.elice.team04backend.common.dto.request.*;
+import com.elice.team04backend.common.exception.CustomException;
+import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.common.model.RedisDAO;
 import com.elice.team04backend.common.service.EmailService;
 import com.elice.team04backend.common.utils.JwtTokenProvider;
@@ -129,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. 비밀번호 비교
         if(!passwordEncoder.matches(changePasswordRequestDto.oldPassword(), user.getPassword())){
-            throw new IllegalStateException("잘못된 비밀번호입니다.");
+            throw new CustomException(ErrorCode.PASSWORD_NOT_MATCH);
         }
 
         // 3. 비밀번호 변경
