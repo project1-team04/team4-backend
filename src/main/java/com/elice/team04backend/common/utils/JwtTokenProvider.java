@@ -118,4 +118,20 @@ public class JwtTokenProvider {
                 ? bearerToken.substring(7)
                 : null;
     }
+
+    public String getUserPk(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            Long userId = claims.get("userId", Long.class); // "userId" 클레임으로 사용자 ID 추출
+            return userId != null ? String.valueOf(userId) : null; // Long을 String으로 변환
+        } catch (Exception e) {
+            log.error("토큰에서 사용자 ID 추출 실패: {}", e.getMessage());
+            throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+    }
 }
