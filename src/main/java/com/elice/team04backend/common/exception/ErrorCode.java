@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     // Auth Errors
     INVALID_OAUTH_TYPE(HttpStatus.BAD_REQUEST, "INVALID_OAUTH_TYPE", "잘못된 소셜 로그인 타입입니다."),
+    PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "PASSWORD_NOT_MATCH", "비밀번호가 잘못됐습니다."),
 
     // Key Errors
     PROJECT_KEY_CREATE_FAILED(HttpStatus.CONFLICT, "PROJECT_KEY_CREATE_FAILED", "프로젝트 키 생성에 실패했습니다. 프로젝트는 영문으로 시작해야 합니다."),
