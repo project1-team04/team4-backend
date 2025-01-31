@@ -7,8 +7,6 @@ import com.elice.team04backend.common.dto.response.AccessTokenResponseDto;
 import com.elice.team04backend.service.AuthService;
 import com.elice.team04backend.service.OAuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
@@ -17,11 +15,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
@@ -75,13 +71,10 @@ public class AuthController {
     }
 
     @Operation(summary = "이메일 일반 회원가입 (AT X)", security = {}, description = "이메일 인증을 통한 회원가입입니다. 해당 API를 사용하려면, https://kdt-gitlab.elice.io/pttrack/class_01/web_project_i/team04/team04-documentations/-/issues/27 를 봐주세요")
-    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/signup")
     public ResponseEntity<?> signup(
-            @Parameter(description = "프로필 이미지 파일", content = @Content(mediaType = MediaType.IMAGE_PNG_VALUE))
-            @RequestPart(value = "image", required = false) MultipartFile profileImage,
-            @Parameter(description = "회원가입 요청 JSON", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-            @RequestPart(value = "form") @Valid SignUpRequestDto signUpRequestDto) {
-        authService.signUp(signUpRequestDto, profileImage);
+            @RequestBody @Valid SignUpRequestDto signUpRequestDto) {
+        authService.signUp(signUpRequestDto);
         return ResponseEntity.ok().build();
     }
 
