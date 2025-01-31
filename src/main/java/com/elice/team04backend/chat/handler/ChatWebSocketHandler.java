@@ -6,6 +6,8 @@ import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 
 public class ChatWebSocketHandler extends TextWebSocketHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatWebSocketHandler.class);
     private final ChatMessageRepository chatMessageRepository;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
@@ -85,6 +88,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         // 세션 레지스트리에 세션 저장
         SessionRegistry.addSession(session.getId(), session);
+
+        log.info("웹 소켓을 통해 서버에 정상적으로 접속이 되었습니다.");
     }
 
     @Override
@@ -100,5 +105,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         SessionRegistry.removeSession(session.getId());
 
         super.afterConnectionClosed(session, status);
+
+        log.info("웹 소켓에서 서버 접속이 끊겼습니다.");
     }
 }
