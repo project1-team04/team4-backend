@@ -1,5 +1,6 @@
 package com.elice.team04backend.service.impl;
 
+import com.elice.team04backend.common.config.CacheConfig;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
@@ -7,6 +8,7 @@ import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
+import com.elice.team04backend.service.CacheService;
 import com.elice.team04backend.service.ProjectService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -18,6 +20,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -43,23 +46,24 @@ public class ProjectServiceImpl implements ProjectService {
     private final InvitationRepository invitationRepository;
     private final JavaMailSender mailSender;
     private final IssueRepository issueRepository;
+    private final CacheConfig cacheConfig;
+    private final CacheService cacheService;
 
     @Qualifier("task")
     private final Executor task;
 
     private static final int MAX_PROJECT_KEY_GENERATE_ATTEMPTS = 100;
 
-    /**
-     * TODO CachePut 사용할때 ProjectTotalResponseDto 와 projectResponseDto 충돌 해결
-     * TODO 캐시 키 null값 들어가는거 해결
-     */
-
     @Cacheable(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
-    @Transactional(readOnly = true)
     @Override
     public ProjectTotalResponseDto getProjectsByUser(Long userId, int page, int size) {
         log.info("userId: {}, page: {}, size: {}", userId, page, size);
-        Pageable pageable = PageRequest.of(page, size);
+        return getProjectsByUserInternal(userId, page, size);
+    }
+    @Transactional(readOnly = true)
+    @Override
+    public ProjectTotalResponseDto getProjectsByUserInternal(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Project> projectPage = projectRepository.findByUserId(userId, pageable);
 
@@ -93,7 +97,7 @@ public class ProjectServiceImpl implements ProjectService {
             List<ProjectResponseDto> projectResponseDtos = projects.stream()
                     .map(Project::from)
                     .toList();
-            return new ProjectSearchResponseDto(projectResponseDtos, (long) projects.size(), total); // projects.size()는 페이지 내 항목 수
+            return new ProjectSearchResponseDto(projectResponseDtos, projects.size(), total); // projects.size()는 페이지 내 항목 수
 
         } catch (ExecutionException e) {
             throw new CustomException(ErrorCode.ASYNC_EXECUTION_FAILED);
@@ -112,7 +116,7 @@ public class ProjectServiceImpl implements ProjectService {
         return findedProject.from();
     }
 
-    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
+    @CacheEvict(value = "userProjects", allEntries = true)
     @Override
     public ProjectResponseDto postProject(Long userId, ProjectRequestDto projectRequestDto) {
         String projectKey = generatedProjectKey(projectRequestDto);
@@ -128,12 +132,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private static UserProjectRole setUserAsManager(Long userId, Project savedProject) {
-        UserProjectRole userProjectRole = UserProjectRole.builder()
+        return UserProjectRole.builder()
                 .user(User.builder().id(userId).build())
                 .project(savedProject)
                 .role(Role.MANAGER)
                 .build();
-        return userProjectRole;
     }
 
     private void createDefaultLabels(Project project) {
@@ -184,11 +187,20 @@ public class ProjectServiceImpl implements ProjectService {
         return suffixBuilder.reverse().toString(); // 예: A ~ Z 다음  AA, AB, ... 순으로 프로젝트 키 생성
     }
 
-    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
     public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
+        int pageSize = cacheConfig.getPageSize();
+        int currentPage = projectRepository.getProjectPageNumber(userId, projectId, pageSize);
+        String cacheKey = userId + "_" + currentPage + "_" + pageSize;
 
-        checkRole(userId, projectId);
+        log.info("Cache Key: userProjects::{}", cacheKey);
+
+        cacheService.evictCache("userProjects", cacheKey); //getProjectsByUser 와 리턴타입 달라서 삭제가 안되는 문제 발생 따라서 캐시를 명시적으로 삭제처리
+        return patchProjectInternal(userId, projectId, currentPage, pageSize, projectUpdateDto);
+    }
+
+    @Override
+    public ProjectResponseDto patchProjectInternal(Long userId, Long projectId, int page, int size, ProjectUpdateDto projectUpdateDto) {
 
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
@@ -211,6 +223,7 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         Project updatedProject = projectRepository.save(project);
+
         return updatedProject.from();
     }
 
@@ -247,10 +260,9 @@ public class ProjectServiceImpl implements ProjectService {
         issueRepository.bulkUpdateIssueKeys(project.getId(), oldProjectKey, newProjectKey);
     }
 
-    @CacheEvict(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
+    @CacheEvict(value = "userProjects", allEntries = true)
     @Override
     public void deleteProject(Long userId, Long projectId) {
-        checkRole(userId, projectId);
 
         UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
@@ -260,35 +272,6 @@ public class ProjectServiceImpl implements ProjectService {
         }
         projectRepository.deleteById(projectId);
     }
-
-//    @Override
-//    public void inviteUsers(Long projectId, List<String> emails) {
-//        Project project = projectRepository.findById(projectId)
-//                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
-//
-//        for (String email : emails) {
-//            User user = userRepository.findByEmail(email)
-//                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
-//
-//            if (userProjectRoleRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
-//                throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
-//            }
-//
-//            if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
-//                throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
-//            }
-//
-//            String token = UUID.randomUUID().toString();
-//            Invitation invitation = Invitation.builder()
-//                    .user(user)
-//                    .project(project)
-//                    .token(token)
-//                    .build();
-//            invitationRepository.save(invitation);
-//
-//            sendInvitationEmail(project.getName(), email, token);
-//        }
-//    }
 
     @Override
     public ProjectUserInfoDto inviteSingleUsers(Long projectId, String email) {
@@ -325,7 +308,7 @@ public class ProjectServiceImpl implements ProjectService {
         String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         String subject = "Project Invitation";
         String content = String.format(
-                "<p>안녕하세요,</p>" +
+                        "<p>안녕하세요,</p>" +
                         "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
                         "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
                         "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +
@@ -358,12 +341,11 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private static UserProjectRole setUserAsMember(Invitation invitation) {
-        UserProjectRole newMember = UserProjectRole.builder()
+        return UserProjectRole.builder()
                 .user(invitation.getUser())
                 .project(invitation.getProject())
                 .role(Role.MEMBER)
                 .build();
-        return newMember;
     }
 
     @Override
@@ -416,15 +398,4 @@ public class ProjectServiceImpl implements ProjectService {
         userProjectRoleRepository.save(currentManagerRole);
         userProjectRoleRepository.save(newManagerRole);
     }
-
-    private void checkRole(Long userId, Long projectId) {
-        UserProjectRole userProjectRole = userProjectRoleRepository.findByUserIdAndProjectId(userId, projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
-
-        if (userProjectRole.getRole() == Role.MEMBER) {
-            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
-        }
-    }
-
-
 }

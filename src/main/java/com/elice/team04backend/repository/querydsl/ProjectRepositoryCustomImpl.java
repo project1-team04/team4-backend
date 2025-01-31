@@ -5,13 +5,13 @@ import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.QProject;
 import com.elice.team04backend.entity.QUserProjectRole;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.springframework.util.StringUtils.hasText;
 
@@ -50,6 +50,26 @@ public class ProjectRepositoryCustomImpl implements ProjectRepositoryCustom {
                 )
                 .fetchOne();
         return count != null ? count : 0L;
+    }
+
+    @Override
+    public int getProjectPageNumber(Long userId, Long projectId, int pageSize) {
+        Long index = queryFactory
+                .select(project.count())
+                .from(project)
+                .leftJoin(project.userProjectRoles, userProjectRole)
+                .where(
+                        userIdEq(userId),
+                        project.createdAt.after(
+                                JPAExpressions.select(project.createdAt)
+                                .from(project)
+                                .where(project.id.eq(projectId))
+                        )
+
+                )
+                .orderBy(project.createdAt.desc())
+                .fetchOne();
+        return index != null ? (int) (index / pageSize) : 0;
     }
 
     private BooleanExpression userIdEq(Long userId) {

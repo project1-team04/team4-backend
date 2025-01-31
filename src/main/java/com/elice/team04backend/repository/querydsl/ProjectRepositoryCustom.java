@@ -10,4 +10,5 @@ import java.util.List;
 public interface ProjectRepositoryCustom {
     List<Project> fetchProjects(Long userId, ProjectSearchCondition searchCondition, Pageable pageable);
     Long fetchProjectCount(Long userId, ProjectSearchCondition searchCondition);
+    int getProjectPageNumber(Long userId, Long projectId, int pageSize);
 }
