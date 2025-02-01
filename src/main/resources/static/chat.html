@@ -14,23 +14,19 @@
             margin-bottom: 10px;
         }
 
-        #messageInput, #tokenInput {
+        #messageInput {
             width: 80%;
             padding: 10px;
             margin-bottom: 10px;
         }
 
-        #sendButton, #connectButton {
+        #sendButton {
             padding: 10px;
         }
     </style>
 </head>
 <body>
 <h1>Real-Time Chat</h1>
-<div>
-    <input type="text" id="tokenInput" placeholder="토큰을 입력하세요" />
-    <button id="connectButton">연결</button>
-</div>
 <div id="chatBox"></div>
 <input type="text" id="messageInput" placeholder="메시지를 입력하세요" />
 <button id="sendButton" disabled>전송</button>
@@ -38,7 +34,6 @@
 <script>
     const issueId = 1; // 이슈 ID
     let socket = null; // 웹소켓 초기화
-    let token = null;  // 사용자 입력 토큰 저장
 
     // 메시지를 화면에 업데이트
     function updateMessage(message) {
@@ -65,18 +60,10 @@
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    // 웹소켓 연결 버튼 클릭 이벤트
-    document.getElementById('connectButton').onclick = function() {
-        const tokenInput = document.getElementById('tokenInput');
-        token = tokenInput.value.trim();
-
-        if (!token) {
-            alert('토큰을 입력하세요.');
-            return;
-        }
-
+    // 웹소켓 연결
+    function connectWebSocket() {
         // 웹소켓 연결
-        socket = new WebSocket(`ws://34.22.102.28:8080/api/chat/${issueId}`, [token]);
+        socket = new WebSocket(`ws://34.22.102.28:8080/api/chat/${issueId}`);
 
         // 서버에서 메시지가 도착하면 처리
         socket.onmessage = function(event) {
@@ -106,7 +93,6 @@
         fetch(`/api/messages/get/${issueId}`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             }
         })
@@ -115,7 +101,7 @@
                 messages.forEach(updateMessage);
             })
             .catch(error => console.error('Error fetching messages:', error));
-    };
+    }
 
     // 메시지 전송
     document.getElementById('sendButton').onclick = function() {
@@ -136,6 +122,9 @@
             messageInput.value = '';
         }
     };
+
+    // 웹페이지 로드 시 웹소켓 연결
+    window.onload = connectWebSocket;
 </script>
 </body>
 </html>
