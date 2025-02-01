@@ -23,25 +23,20 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     private final ChatMessageRepository chatMessageRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final JwtTokenProvider jwtTokenProvider;
 
     // 생성자 주입을 통해 ChatMessageRepository와 RedisTemplate을 주입받습니다.
-    public WebSocketConfig(ChatMessageRepository chatMessageRepository, RedisTemplate<String, Object> redisTemplate, JwtTokenProvider jwtTokenProvider) {
+    public WebSocketConfig(ChatMessageRepository chatMessageRepository, RedisTemplate<String, Object> redisTemplate) {
         this.chatMessageRepository = chatMessageRepository;
         this.redisTemplate = redisTemplate;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(new ChatWebSocketHandler(chatMessageRepository, redisTemplate), "/api/chat/{issueId}")
-                .setAllowedOrigins(
-                        "http://localhost:3000",
-                        "http://34.22.102.28:8080"
-                )
-                .addInterceptors(new WebSocketInterceptor(jwtTokenProvider)); // 인터셉터 추가
+                .setAllowedOrigins("*");
+                //.addInterceptors(new WebSocketInterceptor(jwtTokenProvider)); // 인터셉터 추가
     }
-
+/*
     // 웹소켓 인터셉터 추가
     public class WebSocketInterceptor implements HandshakeInterceptor {
 
@@ -81,7 +76,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
         public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Exception exception) {
         }
-    }
+    }*/
 }
 
 
