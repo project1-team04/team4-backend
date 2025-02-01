@@ -79,7 +79,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         super.afterConnectionEstablished(session);
 
-        String issueIdString = session.getUri().getPath().split("/")[2];
+        String issueIdString = session.getUri().getPath().split("/")[3];
         int issueId = Integer.parseInt(issueIdString);
         String redisKey = REDIS_SESSION_KEY_PREFIX + issueId;
 
@@ -94,7 +94,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, org.springframework.web.socket.CloseStatus status) throws Exception {
-        String issueIdString = session.getUri().getPath().split("/")[2];
+        String issueIdString = session.getUri().getPath().split("/")[3];
         int issueId = Integer.parseInt(issueIdString);
         String redisKey = REDIS_SESSION_KEY_PREFIX + issueId;
 
