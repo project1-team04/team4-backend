@@ -4,14 +4,13 @@ import com.elice.team04backend.common.config.CacheConfig;
 import com.elice.team04backend.common.constant.Role;
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
+import com.elice.team04backend.common.service.EmailService;
 import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
 import com.elice.team04backend.entity.*;
 import com.elice.team04backend.repository.*;
 import com.elice.team04backend.service.CacheService;
 import com.elice.team04backend.service.ProjectService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,12 +21,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -44,10 +43,10 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
-    private final JavaMailSender mailSender;
     private final IssueRepository issueRepository;
     private final CacheConfig cacheConfig;
     private final CacheService cacheService;
+    private final EmailService emailService;
 
     @Qualifier("task")
     private final Executor task;
@@ -304,29 +303,16 @@ public class ProjectServiceImpl implements ProjectService {
         return projectUserInfoDto;
     }
 
+    //프론트 확인을 위해서 url 수정, 백에서 테스트 원할 시 코드 수정하고 진행 해야함
+    // String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
     private void sendInvitationEmail(String projectName, String email, String token) {
-        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
-        String subject = "Project Invitation";
-        String content = String.format(
-                        "<p>안녕하세요,</p>" +
-                        "<p>귀하를 <strong>%s</strong> 프로젝트에 초대합니다.</p>" +
-                        "<p>해당 페이지에 계정이 있으시다면 로그인 후 초대 내용을 확인하실 수 있으며</p>" +
-                        "<p>계정이 없으시다면 가입을 하신 후 프로젝트 매니저에게 다시 재요청을 부탁하셔야 합니다.</p>" +
-                        "<p>감사합니다.</p>" +
-                        "<p>아래 링크를 클릭하여 초대를 수락하세요:</p>" +
-                        "<a href=\"%s\">Accept Invitation</a>",
-                projectName, invitationLink);
+        String invitationLink = String.format("http://localhost:3000/accept/%s", token);
+        Map<String, String> variables = Map.of(
+                "projectName", projectName,
+                "invitationLink", invitationLink
+        );
 
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            helper.setTo(email);
-            helper.setSubject(subject);
-            helper.setText(content, true);
-            mailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new CustomException(ErrorCode.EMAIL_SEND_FAILED);
-        }
+        emailService.sendEmailWithTemplate("INVITATION_EMAIL", email, variables);
     }
 
     @Override
