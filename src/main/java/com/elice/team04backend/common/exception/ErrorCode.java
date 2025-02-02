@@ -50,6 +50,7 @@ public enum ErrorCode {
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "이메일 전송에 실패했습니다."),
     NEW_MANAGER_REQUIRED(HttpStatus.BAD_REQUEST, "NEW_MANAGER_REQUIRED", "마지막 관리자는 새로운 관리자를 지정해야 탈퇴할 수 있습니다."),
     NEW_MANAGER_NOT_FOUND(HttpStatus.NOT_FOUND, "NEW_MANAGER_NOT_FOUND", "지정된 새 관리자를 찾을 수 없습니다."),
+    TEMPLATE_NOT_FOUND(HttpStatus.NOT_FOUND, "TEMPLATE_NOT_FOUND", "해당 템플릿을 찾을 수 없습니다."),
 
     // Asynchronous Errors
     ASYNC_EXECUTION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ASYNC_EXECUTION_FAILED", "비동기 작업 중 실행 오류 발생"),
