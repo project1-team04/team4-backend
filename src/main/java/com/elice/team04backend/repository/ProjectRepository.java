@@ -20,10 +20,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long>, Project
             "WHERE upr.user.id = :userId")
     Page<Project> findByUserId(@Param("userId") Long userId, Pageable pageable);
     void deleteById(Long projectId);
-    @Query("SELECT COUNT(p) FROM Project p " +
-            "JOIN UserProjectRole upr ON p.id = upr.project.id " +
-            "WHERE upr.user.id = :userId")
-    long countProjectsByUserId(@Param("userId") Long userId);
+
     @Query("SELECT p.projectKey FROM Project p WHERE p.projectKey LIKE :prefix%")
     List<String> findAllProjectKeysByPrefix(@Param("prefix") String prefix);
 }

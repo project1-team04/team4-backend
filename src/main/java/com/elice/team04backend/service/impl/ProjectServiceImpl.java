@@ -304,9 +304,10 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     //프론트 확인을 위해서 url 수정, 백에서 테스트 원할 시 코드 수정하고 진행 해야함
-    // String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
+    //back String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
+    //front String invitationLink = String.format("http://localhost:3000/accept/%s", token);
     private void sendInvitationEmail(String projectName, String email, String token) {
-        String invitationLink = String.format("http://localhost:3000/accept/%s", token);
+        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         Map<String, String> variables = Map.of(
                 "projectName", projectName,
                 "invitationLink", invitationLink

@@ -12,7 +12,6 @@ import com.elice.team04backend.service.FirebaseStorageService;
 import com.elice.team04backend.service.IssueService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +33,8 @@ public class IssueServiceImpl implements IssueService {
     private final UserRepository userRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
 
+    private final static String DEFAULT_LABEL = "None";
+
     @Override
     public IssueResponseDto postIssue(Long userId, Long projectId, IssueRequestDto issueRequestDto) {
         User reporter = userRepository.findById(userId)
@@ -41,6 +42,7 @@ public class IssueServiceImpl implements IssueService {
 
         boolean isAssigneeInProject = userProjectRoleRepository.existsByUserIdAndProjectId(
                 issueRequestDto.getAssigneeUserId(), projectId);
+
         if (!isAssigneeInProject) {
             throw new CustomException(ErrorCode.USER_NOT_IN_PROJECT);
         }
@@ -69,7 +71,7 @@ public class IssueServiceImpl implements IssueService {
             return labelRepository.findById(issueRequestDto.getLabelId())
                     .orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
         } else {
-            return labelRepository.findByProjectIdAndName(projectId, "None")
+            return labelRepository.findByProjectIdAndName(projectId, DEFAULT_LABEL)
                     .orElseThrow(() -> new CustomException(ErrorCode.LABEL_NOT_FOUND));
         }
     }

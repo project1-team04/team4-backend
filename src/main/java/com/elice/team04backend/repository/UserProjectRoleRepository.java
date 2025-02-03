@@ -20,7 +20,6 @@ public interface UserProjectRoleRepository extends JpaRepository<UserProjectRole
             @Param("userId") Long userId,
             @Param("projectId") Long projectId);
 
-    //Optional<UserProjectRole> findByUserIdAndProjectId(Long userId, Long projectId);
     @Query( "SELECT upr FROM UserProjectRole upr " +
             "JOIN FETCH upr.user " +
             "WHERE upr.project.id = :projectId")
