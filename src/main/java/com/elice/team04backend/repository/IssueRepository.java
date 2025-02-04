@@ -15,13 +15,14 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, IssueReposi
     List<Issue> findByProjectId(Long projectId);
     @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(i.issueKey, LENGTH(:projectKey) + 2) AS int)), 0) " +
             "FROM Issue i WHERE i.project.id = :projectId")
-    int findMaxIssueIndexByProject(@Param("projectId") Long projectId, @Param("projectKey") String projectKey);
+    int findMaxIssueIndexByProject(@Param("projectId") Long projectId,
+                                   @Param("projectKey") String projectKey);
 
     @Modifying
     @Query("UPDATE Issue i SET i.issueKey = " +
             "REPLACE(i.issueKey, :oldProjectKey, :newProjectKey) " +
             "WHERE i.project.id = :projectId")
     void bulkUpdateIssueKeys(@Param("projectId") Long projectId,
-                            @Param("oldProjectKey") String oldProjectKey,
-                            @Param("newProjectKey") String newProjectKey);
+                             @Param("oldProjectKey") String oldProjectKey,
+                             @Param("newProjectKey") String newProjectKey);
 }

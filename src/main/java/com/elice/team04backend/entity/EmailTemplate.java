@@ -16,7 +16,7 @@ public class EmailTemplate extends BaseEntity{
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String templateKey; //
+    private String templateKey;
 
     @Column(nullable = false)
     private String subject;
@@ -26,11 +26,6 @@ public class EmailTemplate extends BaseEntity{
 
     public EmailTemplate(String templateKey, String subject, String content) {
         this.templateKey = templateKey;
-        this.subject = subject;
-        this.content = content;
-    }
-
-    public void updateContent(String subject, String content) {
         this.subject = subject;
         this.content = content;
     }
