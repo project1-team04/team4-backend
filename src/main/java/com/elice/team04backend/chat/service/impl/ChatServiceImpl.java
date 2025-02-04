@@ -1,6 +1,7 @@
 package com.elice.team04backend.chat.service.impl;
 
 import com.elice.team04backend.chat.SessionRegistry;
+import com.elice.team04backend.chat.dto.MessageDto;
 import com.elice.team04backend.chat.entity.Message;
 import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.elice.team04backend.chat.service.ChatService;
@@ -14,6 +15,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +40,25 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Iterable<Message> readChat(int issueId, int userId, String userName) {
+    public List<MessageDto> getChat(int issueId) {
+        List<Message> messages = (List<Message>) chatMessageRepository.findByIssueId(issueId);
+
+        return messages.stream()
+                .map(message -> new MessageDto(
+                        message.getId(),
+                        message.getUserId(),
+                        message.getIssueId(),
+                        message.getSender(),
+                        message.getContent(),
+                        message.getTimestamp(), // Original timestamp from Message
+                        message.getReadBy(),
+                        message.getReadById()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Iterable<MessageDto> readChat(int issueId, int userId, String userName) {
         Iterable<Message> messages = chatMessageRepository.findByIssueId(issueId);
         List<Message> updateMessages = new ArrayList<>();
 
@@ -69,7 +90,19 @@ public class ChatServiceImpl implements ChatService {
             updateMessages.add(message);
         }
         sendMessage(issueId, updateMessages);
-        return updateMessages;
+
+        return updateMessages.stream()
+                .map(message -> new MessageDto(
+                        message.getId(),
+                        message.getUserId(),
+                        message.getIssueId(),
+                        message.getSender(),
+                        message.getContent(),
+                        message.getTimestamp(), // Original timestamp from Message
+                        message.getReadBy(),
+                        message.getReadById()
+                ))
+                .collect(Collectors.toList());
     }
 
     public void sendMessage(int issueId, List<Message> messages) {
@@ -78,9 +111,22 @@ public class ChatServiceImpl implements ChatService {
         Set<Object> members = redisTemplate.opsForSet().members(redisKey);
         Set<String> sessionIds = convertToStringSet(members);
 
+         List<MessageDto> updateMessages = messages.stream()
+                    .map(message -> new MessageDto(
+                            message.getId(),
+                            message.getUserId(),
+                            message.getIssueId(),
+                            message.getSender(),
+                            message.getContent(),
+                            message.getTimestamp(), // Original timestamp from Message
+                            message.getReadBy(),
+                            message.getReadById()
+                    ))
+                    .collect(Collectors.toList());
+
         if (sessionIds != null && !sessionIds.isEmpty()) {
             // 메시지 리스트를 JSON 문자열로 변환
-            for(Message message : messages){
+            for(MessageDto message : updateMessages){
                 String jsonMessages = objectMapper.writeValueAsString(message);
                 TextMessage textMessage = new TextMessage(jsonMessages);
 
