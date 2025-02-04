@@ -40,10 +40,17 @@
         const chatBox = document.getElementById('chatBox');
         let found = false;
 
+        // 시간을 읽을 수 있는 형식으로 변환
+        const formattedTime = new Date(message.timestamp).toLocaleString('ko-KR', {
+            hour12: false,
+            dateStyle: 'short',
+            timeStyle: 'short',
+        });
+
         // 이미 존재하는 메시지라면 아이디로 찾아서 업데이트
         Array.from(chatBox.children).forEach(child => {
             if (child.dataset.id === message.id) {
-                child.textContent = `${message.sender}: ${message.content}, 읽은 사람: ${Array.from(message.readBy).join(', ')}`;
+                child.textContent = `${formattedTime} - ${message.sender}: ${message.content}, 읽은 사람: ${Array.from(message.readBy).join(', ')}`;
                 found = true;
             }
         });
@@ -53,7 +60,7 @@
             const newMessage = document.createElement('div');
             newMessage.dataset.id = message.id;
             const readByList = message.readBy ? Array.from(message.readBy).join(', ') : '';
-            newMessage.textContent = `${message.sender}: ${message.content}, 읽은 사람: ${readByList}`;
+            newMessage.textContent = `${formattedTime} - ${message.sender}: ${message.content}, 읽은 사람: ${readByList}`;
             chatBox.appendChild(newMessage);
         }
 
@@ -114,6 +121,7 @@
                 content: messageContent,
                 issueId: issueId,
                 userId: 1,
+                timestamp: new Date().toISOString(), // 현재 시간을 ISO 형식으로 추가
                 readBy: [],
             };
 
