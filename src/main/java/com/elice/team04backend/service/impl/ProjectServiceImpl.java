@@ -308,7 +308,7 @@ public class ProjectServiceImpl implements ProjectService {
     //front String invitationLink = String.format("http://localhost:3000/accept/%s", token);
     //http://34.22.102.28:8080
     private void sendInvitationEmail(String projectName, String email, String token) {
-        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
+        String invitationLink = String.format("http://34.22.102.28:8080/api/accept/%s", token);
         Map<String, String> variables = Map.of(
                 "projectName", projectName,
                 "invitationLink", invitationLink
