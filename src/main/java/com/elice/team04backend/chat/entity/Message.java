@@ -32,7 +32,7 @@ public class Message {
     @JsonProperty("content")
     private String content;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private LocalDateTime timestamp;
 
     @JsonProperty("readBy")

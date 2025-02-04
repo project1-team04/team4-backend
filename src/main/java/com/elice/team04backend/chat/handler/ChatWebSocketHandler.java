@@ -1,6 +1,7 @@
 package com.elice.team04backend.chat.handler;
 
 import com.elice.team04backend.chat.SessionRegistry;
+import com.elice.team04backend.chat.dto.MessageDto;
 import com.elice.team04backend.chat.entity.Message;
 import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +49,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
         chatMessageRepository.save(messageVo);
 
+        MessageDto messageDto = new MessageDto(messageVo.getId(), messageVo.getUserId(), messageVo.getIssueId(),messageVo.getSender(),messageVo.getContent(), messageVo.getTimestamp(), messageVo.getReadBy(), messageVo.getReadById());
+
         // Redis에서 해당 이슈의 모든 세션 ID를 가져와서 메시지 전송
         String redisKey = REDIS_SESSION_KEY_PREFIX + messageVo.getIssueId();
         //해당 이슈 ID와 관련된 모든 세션 ID를 Redis에서 가져온다
@@ -55,7 +58,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         Set<String> sessionIds = convertToStringSet(members);
 
         if (sessionIds != null) {
-            String messageJson = objectMapper.writeValueAsString(messageVo);
+            String messageJson = objectMapper.writeValueAsString(messageDto);
             for (String sessionId : sessionIds) {
                 WebSocketSession webSocketSession = SessionRegistry.getSession(sessionId);
                 if (webSocketSession != null && webSocketSession.isOpen()) {
