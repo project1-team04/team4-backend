@@ -20,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +58,7 @@ public class ProjectServiceImpl implements ProjectService {
         log.info("userId: {}, page: {}, size: {}", userId, page, size);
         return getProjectsByUserInternal(userId, page, size);
     }
+
     @Transactional(readOnly = true)
     @Override
     public ProjectTotalResponseDto getProjectsByUserInternal(Long userId, int page, int size) {
@@ -308,7 +308,7 @@ public class ProjectServiceImpl implements ProjectService {
     //front String invitationLink = String.format("http://localhost:3000/accept/%s", token);
     //http://34.22.102.28:8080
     private void sendInvitationEmail(String projectName, String email, String token) {
-        String invitationLink = String.format("http://34.22.102.28:8080/api/accept/%s", token);
+        String invitationLink = String.format("http://localhost:8080/api/accept/%s", token);
         Map<String, String> variables = Map.of(
                 "projectName", projectName,
                 "invitationLink", invitationLink

@@ -63,6 +63,14 @@ public class ProjectController {
         List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
         return ResponseEntity.ok(users);
     }
+    @Operation(summary = "특정 유저가 pm인 프로젝트와 그 프로젝트의 유저들을 조회",
+            description = "특정 유저의 ROLE이 MANAGER인 모든 프로젝트와 그 프로젝트에 속한 일반 유저들을 조회합니다.")
+    @GetMapping("/managed")
+    public ResponseEntity<List<ProjectManageResponseDto>> getManagedProjectsByUserId(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<ProjectManageResponseDto> responseDtos = userProjectRoleService.getManagedProjects(userDetails.getUserId());
+        return ResponseEntity.ok(responseDtos);
+    }
 
     @Operation(summary = "프로젝트 작성", description = "프로젝트를 작성합니다.")
     @PostMapping

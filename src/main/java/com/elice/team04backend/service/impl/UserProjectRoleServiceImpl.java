@@ -2,7 +2,10 @@ package com.elice.team04backend.service.impl;
 
 import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
+import com.elice.team04backend.dto.project.ProjectManageResponseDto;
+import com.elice.team04backend.dto.project.ProjectResponseDto;
 import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
+import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.UserProjectRole;
 import com.elice.team04backend.repository.UserProjectRoleRepository;
 import com.elice.team04backend.service.UserProjectRoleService;
@@ -31,7 +34,6 @@ public class UserProjectRoleServiceImpl implements UserProjectRoleService {
         if (userProjectRoles.isEmpty()) {
             throw new CustomException(ErrorCode.PROJECT_USERS_NOT_FOUND);
         }
-
         return userProjectRoles.stream()
                 .map(userProjectRole -> UserProjectRoleResponseDto.builder()
                         .userId(userProjectRole.getUser().getId())
@@ -41,4 +43,36 @@ public class UserProjectRoleServiceImpl implements UserProjectRoleService {
                         .build())
                 .toList();
     }
+
+    @Override
+    public List<ProjectManageResponseDto> getManagedProjects(Long userId) {
+        List<Project> managedProjects = userProjectRoleRepository.findProjectsByUserIdRoleManager(userId);
+
+        if (managedProjects.isEmpty()) {
+            throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
+        }
+        return managedProjects.stream().map(project -> {
+            List<UserProjectRole> members = userProjectRoleRepository.findAllUserByProjectIdRoleMember(project.getId());
+
+            List<UserProjectRoleResponseDto> memberDtos = members.stream()
+                    .map(userProjectRole -> new UserProjectRoleResponseDto(
+                            userProjectRole.getUser().getId(),
+                            userProjectRole.getUser().getUsername(),
+                            userProjectRole.getUser().getEmail(),
+                            userProjectRole.getRole()))
+                    .toList();
+
+            return new ProjectManageResponseDto(
+                    new ProjectResponseDto(
+                            String.valueOf(project.getId()),
+                            project.getProjectKey(),
+                            project.getName(),
+                            project.getIssueCount()
+                    ),
+                    memberDtos
+            );
+        }).toList();
+    }
+
+
 }
