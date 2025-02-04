@@ -1,5 +1,6 @@
 package com.elice.team04backend.chat.web;
 
+import com.elice.team04backend.chat.dto.MessageDto;
 import com.elice.team04backend.chat.entity.Message;
 import com.elice.team04backend.chat.repository.ChatMessageRepository;
 import com.elice.team04backend.chat.service.ChatService;
@@ -34,13 +35,13 @@ public class ChatController {
 
     @Operation(summary = "채팅방 기록 불러오기", description = "디비에있는 채팅기록들을 issue_id로 가지고 옵니다")
     @GetMapping("/get/{issueId}")
-    public Iterable<Message> selectMessages(@Parameter(description = "채팅 기록을 불러올 issue ID") @PathVariable String issueId) {
-        return chatMessageRepository.findByIssueId(Integer.parseInt(issueId));
+    public Iterable<MessageDto> selectMessages(@Parameter(description = "채팅 기록을 불러올 issue ID") @PathVariable String issueId) {
+        return chatService.getChat(Integer.parseInt(issueId));
     }
 
     @Operation(summary = "채팅읽었다고 처리하기", description = "로그인되어있는 유저가 해당 이슈의 채팅을 읽음 처리 합니다")
     @GetMapping("/read/{issueId}")
-    public Iterable<Message> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public Iterable<MessageDto> readMessages(@Parameter(description = "채팅을 읽었다는것을 확인하기 위한 issue ID") @PathVariable String issueId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getUserId();
         Optional<User> user = userRepository.findByEmail(userDetails.getUsername());
         String userName = user.get().getUsername();
