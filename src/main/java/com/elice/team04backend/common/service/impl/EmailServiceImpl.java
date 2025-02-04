@@ -135,7 +135,7 @@ public class EmailServiceImpl implements EmailService {
                                    <div class="container">
                                        <h1>프로젝트에 참여하신 걸 환영합니다!</h1>
                                        <p>성공적으로 프로젝트에 참여하셨습니다.</p>
-                                       <a href="http://34.22.102.28:8080/auth" class="btn">대시보드로 이동</a>
+                                       <a href="{loginUrl}" class="btn">대시보드로 이동</a>
                                    </div>
                                </body>
                                </html>

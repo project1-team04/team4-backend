@@ -38,6 +38,8 @@ public class IssueRepositoryCustomImpl implements IssueRepositoryCustom{
         return hasText(condition)
                 ? issue.name.containsIgnoreCase(condition)
                 .or(issue.issueKey.containsIgnoreCase(condition))
+                .or(issue.assignee.username.containsIgnoreCase(condition))
+                .or(issue.description.containsIgnoreCase(condition))
                 :null;
     }
 }

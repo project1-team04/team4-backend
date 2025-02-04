@@ -43,6 +43,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final UserRepository userRepository;
     private final InvitationRepository invitationRepository;
     private final IssueRepository issueRepository;
+    private final InvitationUrlRepository invitationUrlRepository;
     private final CacheConfig cacheConfig;
     private final CacheService cacheService;
     private final EmailService emailService;
@@ -308,7 +309,12 @@ public class ProjectServiceImpl implements ProjectService {
     //front String invitationLink = String.format("http://localhost:3000/accept/%s", token);
     //http://34.22.102.28:8080
     private void sendInvitationEmail(String projectName, String email, String token) {
-        String invitationLink = String.format("http://34.22.102.28:8080/api/accept/%s", token);
+        String invitationUrl = invitationUrlRepository.findByTemplateKey("INVITATION_URL")
+                .map(InvitationUrl::getUrlFormat)
+                .orElseThrow(() -> new CustomException(ErrorCode.TEMPLATE_NOT_FOUND));
+
+
+        String invitationLink = String.format(invitationUrl, token);
         Map<String, String> variables = Map.of(
                 "projectName", projectName,
                 "invitationLink", invitationLink
