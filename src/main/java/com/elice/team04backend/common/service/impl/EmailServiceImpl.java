@@ -84,16 +84,61 @@ public class EmailServiceImpl implements EmailService {
                 "INVITATION_ACCEPTED",
                 "초대 수락",
                 """
-                        <html>
-                            <head>
-                                <meta charset="UTF-8">
-                                <title>초대 수락</title>
-                            </head>
-                            <body>
-                                <h1>프로젝트에 참여하신걸 환영합니다.</h1>
-                                <p>성공적으로 프로젝트에 참여하셨습니다.</p>
-                            </body>
-                        </html>
+                        <!DOCTYPE html>
+                               <html lang="ko">
+                               <head>
+                                   <meta charset="UTF-8">
+                                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                   <title>초대 수락</title>
+                                   <style>
+                                       body {
+                                           font-family: 'Arial', sans-serif;
+                                           background-color: #f4f4f4;
+                                           display: flex;
+                                           justify-content: center;
+                                           align-items: center;
+                                           height: 100vh;
+                                           margin: 0;
+                                       }
+                                       .container {
+                                           background: white;
+                                           padding: 30px;
+                                           border-radius: 10px;
+                                           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                           text-align: center;
+                                           max-width: 400px;
+                                           width: 100%;
+                                       }
+                                       h1 {
+                                           color: #2c3e50;
+                                       }
+                                       p {
+                                           font-size: 16px;
+                                           color: #555;
+                                       }
+                                       .btn {
+                                           display: inline-block;
+                                           margin-top: 20px;
+                                           padding: 10px 20px;
+                                           background-color: #3498db;
+                                           color: white;
+                                           text-decoration: none;
+                                           border-radius: 5px;
+                                           transition: 0.3s;
+                                       }
+                                       .btn:hover {
+                                           background-color: #2980b9;
+                                       }
+                                   </style>
+                               </head>
+                               <body>
+                                   <div class="container">
+                                       <h1>프로젝트에 참여하신 걸 환영합니다!</h1>
+                                       <p>성공적으로 프로젝트에 참여하셨습니다.</p>
+                                       <a href="http://34.22.102.28:8080/auth" class="btn">대시보드로 이동</a>
+                                   </div>
+                               </body>
+                               </html>
                         """
         );
         emailTemplateRepository.save(acceptTemplate);
