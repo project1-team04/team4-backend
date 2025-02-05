@@ -44,9 +44,6 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Label> labels = new ArrayList<>();
 
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Invitation> invitations = new ArrayList<>();
-
     public void update(ProjectUpdateDto projectUpdateDto) {
         this.name = projectUpdateDto.getName();
     }
