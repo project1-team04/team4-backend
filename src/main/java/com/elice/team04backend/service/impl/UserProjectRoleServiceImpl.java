@@ -4,6 +4,7 @@ import com.elice.team04backend.common.exception.CustomException;
 import com.elice.team04backend.common.exception.ErrorCode;
 import com.elice.team04backend.dto.project.ProjectManageResponseDto;
 import com.elice.team04backend.dto.project.ProjectResponseDto;
+import com.elice.team04backend.dto.userProjectRole.UserProjectImageResponseDto;
 import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.entity.Project;
 import com.elice.team04backend.entity.UserProjectRole;
@@ -30,17 +31,18 @@ public class UserProjectRoleServiceImpl implements UserProjectRoleService {
     }
 
     @Override
-    public List<UserProjectRoleResponseDto> getUsersByProjectId(Long projectId) {
+    public List<UserProjectImageResponseDto> getUsersByProjectId(Long projectId) {
         List<UserProjectRole> userProjectRoles = userProjectRoleRepository.findAllByProjectId(projectId);
         if (userProjectRoles.isEmpty()) {
             throw new CustomException(ErrorCode.PROJECT_USERS_NOT_FOUND);
         }
         return userProjectRoles.stream()
-                .map(userProjectRole -> UserProjectRoleResponseDto.builder()
+                .map(userProjectRole -> UserProjectImageResponseDto.builder()
                         .userId(userProjectRole.getUser().getId())
                         .userName(userProjectRole.getUser().getUsername())
                         .email(userProjectRole.getUser().getEmail())
                         .role(userProjectRole.getRole())
+                        .imgUrl(userProjectRole.getUser().getProfileImage())
                         .build())
                 .toList();
     }
