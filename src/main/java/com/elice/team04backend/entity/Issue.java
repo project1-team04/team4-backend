@@ -35,7 +35,7 @@ public class Issue extends BaseEntity {
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignee_user_id", nullable = false)
+    @JoinColumn(name = "assignee_user_id")
     private User assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -61,10 +61,15 @@ public class Issue extends BaseEntity {
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<IssueImage> issueImages = new ArrayList<>();
 
-    public void update(IssueUpdateDto issueUpdateDto) {
+    public void update(IssueUpdateDto issueUpdateDto, User assignee) {
+        this.name = issueUpdateDto.getName();
         this.description = issueUpdateDto.getDescription();
         this.troubleShooting = issueUpdateDto.getTroubleShooting();
-        this.name = issueUpdateDto.getName();
+        this.status = issueUpdateDto.getStatus();
+
+        if (issueUpdateDto.getAssigneeUserId() != null) {
+            this.assignee = assignee;
+        }
     }
 
     public void addIssueImages(IssueImage issueImage) {
@@ -80,7 +85,7 @@ public class Issue extends BaseEntity {
                 .id(String.valueOf(this.id))
                 .projectId(this.getProject().getId())
                 .labelId(this.getLabel().getId())
-                .assigneeUserId(this.getAssignee().getId())
+                .assigneeUserId(this.getAssignee() != null ? this.getAssignee().getId() : null)
                 .reporterUserId(this.getReporter().getId())
                 .issueKey(this.getIssueKey())
                 .description(this.getDescription())

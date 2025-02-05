@@ -19,7 +19,6 @@ public class IssueRequestDto {
     @NotNull(message = "이슈 제목을 입력해주세요.")
     private String name;
 
-    @NotNull(message = "담당자 ID는 필수입니다.")
     private Long assigneeUserId;
 
     @NotBlank(message = "이슈 설명은 필수입니다.")
