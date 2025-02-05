@@ -380,21 +380,26 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void assignManager(Long currentManagerId, Long projectId, Long newManagerId) {
-        UserProjectRole currentManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(currentManagerId, projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+    public void assignManager(Long currentManagerId, List<ProjectAssignRequestDto> assignRequestDtos) {
+        for (ProjectAssignRequestDto request : assignRequestDtos) {
+            Long projectId = request.getProjectId();
+            Long newManagerId = request.getUserId();
 
-        if (currentManagerRole.getRole() != Role.MANAGER) {
-            throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
+            UserProjectRole currentManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(currentManagerId, projectId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.ROLE_ACCESS_DENIED));
+
+            if (currentManagerRole.getRole() != Role.MANAGER) {
+                throw new CustomException(ErrorCode.ROLE_PERMISSION_DENIED);
+            }
+
+            UserProjectRole newManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(newManagerId, projectId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NEW_MANAGER_NOT_FOUND));
+
+            currentManagerRole.setRole(Role.MEMBER);
+            newManagerRole.setRole(Role.MANAGER);
+
+            userProjectRoleRepository.save(currentManagerRole);
+            userProjectRoleRepository.save(newManagerRole);
         }
-
-        UserProjectRole newManagerRole = userProjectRoleRepository.findByUserIdAndProjectId(newManagerId, projectId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NEW_MANAGER_NOT_FOUND));
-
-        newManagerRole.setRole(Role.MANAGER);
-        currentManagerRole.setRole(Role.MEMBER);
-
-        userProjectRoleRepository.save(currentManagerRole);
-        userProjectRoleRepository.save(newManagerRole);
     }
 }
