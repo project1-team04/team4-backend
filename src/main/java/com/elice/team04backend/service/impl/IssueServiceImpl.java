@@ -40,15 +40,18 @@ public class IssueServiceImpl implements IssueService {
         User reporter = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
-        boolean isAssigneeInProject = userProjectRoleRepository.existsByUserIdAndProjectId(
-                issueRequestDto.getAssigneeUserId(), projectId);
+        User assignee = null;
+        if (issueRequestDto.getAssigneeUserId() != null) {
+            boolean isAssigneeInProject = userProjectRoleRepository.existsByUserIdAndProjectId(
+                    issueRequestDto.getAssigneeUserId(), projectId);
 
-        if (!isAssigneeInProject) {
-            throw new CustomException(ErrorCode.USER_NOT_IN_PROJECT);
+            if (!isAssigneeInProject) {
+                throw new CustomException(ErrorCode.USER_NOT_IN_PROJECT);
+            }
+
+            assignee = userRepository.findById(issueRequestDto.getAssigneeUserId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
         }
-
-        User assignee = userRepository.findById(issueRequestDto.getAssigneeUserId())
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
@@ -59,7 +62,9 @@ public class IssueServiceImpl implements IssueService {
         Issue issue = issueRequestDto.from(reporter, assignee, project, label, issueKey);
 
         reporter.addReporterIssue(issue);
-        assignee.addAssigneeIssue(issue);
+        if (assignee != null) {
+            assignee.addAssigneeIssue(issue);
+        }
         project.addIssue(issue);
 
         Issue savedIssue = issueRepository.save(issue);
@@ -115,7 +120,16 @@ public class IssueServiceImpl implements IssueService {
     public IssueResponseDto patchIssue(Long issueId, IssueUpdateDto issueUpdateDto) {
         Issue findedIssue = issueRepository.findById(issueId)
                 .orElseThrow(() -> new CustomException(ErrorCode.ISSUE_NOT_FOUND));
-        findedIssue.update(issueUpdateDto);
+        User assignee = null;
+
+        if (issueUpdateDto.getAssigneeUserId() != null) {
+            if (issueUpdateDto.getAssigneeUserId() != 0) {
+                assignee = userRepository.findById(issueUpdateDto.getAssigneeUserId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+            }
+        }
+
+        findedIssue.update(issueUpdateDto, assignee);
         return findedIssue.from();
     }
 
