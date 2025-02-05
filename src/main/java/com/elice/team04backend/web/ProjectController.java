@@ -177,9 +177,8 @@ public class ProjectController {
     @PatchMapping("/assign-manager")
     public ResponseEntity<Void> assignManager(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("newManagerId") Long newManagerId) {
-        projectService.assignManager(userDetails.getUserId(), projectId, newManagerId);
+            @RequestBody List<ProjectAssignRequestDto> assignRequestDtos) {
+        projectService.assignManager(userDetails.getUserId(), assignRequestDtos);
         return ResponseEntity.ok().build();
     }
 
