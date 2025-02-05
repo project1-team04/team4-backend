@@ -190,15 +190,16 @@ public class ProjectServiceImpl implements ProjectService {
         return suffixBuilder.reverse().toString(); // 예: A ~ Z 다음  AA, AB, ... 순으로 프로젝트 키 생성
     }
 
+    @CacheEvict(value = "userProjects", allEntries = true)
     @Override
     public ProjectResponseDto patchProject(Long userId, Long projectId, ProjectUpdateDto projectUpdateDto) {
         int pageSize = cacheConfig.getPageSize();
         int currentPage = projectRepository.getProjectPageNumber(userId, projectId, pageSize);
-        String cacheKey = userId + "_" + currentPage + "_" + pageSize;
-
-        log.info("Cache Key: userProjects::{}", cacheKey);
-
-        cacheService.evictCache("userProjects", cacheKey); //getProjectsByUser 와 리턴타입 달라서 삭제가 안되는 문제 발생 따라서 캐시를 명시적으로 삭제처리
+//        String cacheKey = userId + "_" + currentPage + "_" + pageSize;
+//
+//        log.info("Cache Key: userProjects::{}", cacheKey);
+//
+//        cacheService.evictCache("userProjects", cacheKey); //getProjectsByUser 와 리턴타입 달라서 삭제가 안되는 문제 발생 따라서 캐시를 명시적으로 삭제처리, 캐시키에 널값이 저장되는 오류
         return patchProjectInternal(userId, projectId, currentPage, pageSize, projectUpdateDto);
     }
 
