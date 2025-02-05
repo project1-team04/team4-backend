@@ -41,12 +41,19 @@ public class UserServiceImpl implements UserService {
 
         // 2. 프로필 이미지 수정
         String originalProfileImageUrl = user.getProfileImage();
-        String updatedProfileImageUrl = user.getProfileImage();
+        String updatedProfileImageUrl;
 
         try {
-            if (!profileImage.isEmpty()) {
-                firebaseStorageService.deleteImage(originalProfileImageUrl);
+            if (profileImage != null) { // 이미지를 등록하거나 수정해야하는 상황
+                if(originalProfileImageUrl != null) {
+                    firebaseStorageService.deleteImage(originalProfileImageUrl);
+                }
                 updatedProfileImageUrl = firebaseStorageService.uploadImage(profileImage);
+            } else { // 이미지 등록을 안하거나 기존 프로필 이미지를 삭제할 시
+                if(originalProfileImageUrl != null){
+                    firebaseStorageService.deleteImage(originalProfileImageUrl);
+                }
+                updatedProfileImageUrl = null;
             }
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 업로드에 실패했습니다.");
