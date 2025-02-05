@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -41,17 +43,18 @@ public class ProjectServiceImpl implements ProjectService {
     private final LabelRepository labelRepository;
     private final UserProjectRoleRepository userProjectRoleRepository;
     private final UserRepository userRepository;
-    private final InvitationRepository invitationRepository;
     private final IssueRepository issueRepository;
     private final InvitationUrlRepository invitationUrlRepository;
     private final CacheConfig cacheConfig;
     private final CacheService cacheService;
     private final EmailService emailService;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Qualifier("task")
     private final Executor task;
 
     private static final int MAX_PROJECT_KEY_GENERATE_ATTEMPTS = 100;
+    private static final long INVITATION_TTL = 60;
 
     @Cacheable(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
@@ -284,21 +287,14 @@ public class ProjectServiceImpl implements ProjectService {
             throw new CustomException(ErrorCode.USER_ALREADY_IN_PROJECT);
         }
 
-        if (invitationRepository.existsByUserIdAndProjectId(user.getId(), projectId)) {
-            throw new CustomException(ErrorCode.USER_ALREADY_INVITED);
-        }
-
         ProjectUserInfoDto projectUserInfoDto = new ProjectUserInfoDto();
         projectUserInfoDto.setEmail(user.getEmail());
         projectUserInfoDto.setName(user.getUsername());
 
         String token = UUID.randomUUID().toString();
-        Invitation invitation = Invitation.builder()
-                .user(user)
-                .project(project)
-                .token(token)
-                .build();
-        invitationRepository.save(invitation);
+        String redisKey = "invitation:" + token;
+
+        redisTemplate.opsForValue().set(redisKey, user.getId() + ":" + projectId, INVITATION_TTL, TimeUnit.SECONDS);
 
         sendInvitationEmail(project.getName(), email, token);
         return projectUserInfoDto;
@@ -325,21 +321,30 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void acceptInvitation(String token) {
-        Invitation invitation = invitationRepository.findByToken(token)
-                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_INVITATION));
+        String redisKey = "invitation:" + token;
 
-        UserProjectRole newMember = setUserAsMember(invitation);
-        userProjectRoleRepository.save(newMember);
+        String value = redisTemplate.opsForValue().get(redisKey);
+        if (value == null) {
+            throw new CustomException(ErrorCode.INVALID_INVITATION); // 만료되었거나 존재하지 않는 초대
+        }
 
-        invitationRepository.deleteById(invitation.getId());
-    }
+        String[] parts = value.split(":");
+        Long userId = Long.parseLong(parts[0]);
+        Long projectId = Long.parseLong(parts[1]);
 
-    private static UserProjectRole setUserAsMember(Invitation invitation) {
-        return UserProjectRole.builder()
-                .user(invitation.getUser())
-                .project(invitation.getProject())
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
+
+        UserProjectRole newMember = UserProjectRole.builder()
+                .user(user)
+                .project(project)
                 .role(Role.MEMBER)
                 .build();
+        userProjectRoleRepository.save(newMember);
+
+        redisTemplate.delete(redisKey);
     }
 
     @Override

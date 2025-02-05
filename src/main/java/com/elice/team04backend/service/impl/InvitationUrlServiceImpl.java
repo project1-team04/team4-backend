@@ -24,7 +24,7 @@ public class InvitationUrlServiceImpl implements InvitationUrlService {
 
         InvitationUrl invitationUrl = new InvitationUrl(
                 "INVITATION_URL",
-                "http://34.22.102.28:8080/api/accept/%s"
+                "http://34.22.102.28:8080/accept/%s"
         );
 
         InvitationUrl loginUrl = new InvitationUrl(

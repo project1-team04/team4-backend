@@ -44,7 +44,7 @@ public enum ErrorCode {
     ROLE_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ROLE_ACCESS_DENIED", "해당 작업에 접근할 권한이 없습니다."),
 
     // Invitation Errors
-    INVALID_INVITATION(HttpStatus.NOT_FOUND, "INVALID_INVITATION", "유효하지 않은 초대 토큰입니다."),
+    INVALID_INVITATION(HttpStatus.NOT_FOUND, "INVALID_INVITATION", "유효하지 않은 초대 토큰이거나, 초대시간이 만료되었습니다."),
     LAST_MANAGER_CANNOT_LEAVE(HttpStatus.FORBIDDEN, "LAST_MANAGER_CANNOT_LEAVE", "마지막 관리자는 프로젝트를 탈퇴할 수 없습니다. 새로운 관리자를 지정해주세요."),
     NO_MEMBER_TO_ASSIGN(HttpStatus.BAD_REQUEST, "NO_MEMBER_TO_ASSIGN", "새 관리자를 지정할 수 있는 멤버가 없습니다."),
     EMAIL_SEND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "EMAIL_SEND_FAILED", "이메일 전송에 실패했습니다."),
