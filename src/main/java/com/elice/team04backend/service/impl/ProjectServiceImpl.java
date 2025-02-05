@@ -54,7 +54,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final Executor task;
 
     private static final int MAX_PROJECT_KEY_GENERATE_ATTEMPTS = 100;
-    private static final long INVITATION_TTL = 60;
+    private static final long INVITATION_TTL = 300;
 
     @Cacheable(value = "userProjects", key = "#userId + '_' + #page + '_' + #size")
     @Override
