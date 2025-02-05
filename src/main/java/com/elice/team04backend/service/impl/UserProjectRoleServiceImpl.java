@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -51,28 +52,34 @@ public class UserProjectRoleServiceImpl implements UserProjectRoleService {
         if (managedProjects.isEmpty()) {
             throw new CustomException(ErrorCode.PROJECT_NOT_FOUND);
         }
-        return managedProjects.stream().map(project -> {
-            List<UserProjectRole> members = userProjectRoleRepository.findAllUserByProjectIdRoleMember(project.getId());
 
-            List<UserProjectRoleResponseDto> memberDtos = members.stream()
-                    .map(userProjectRole -> new UserProjectRoleResponseDto(
-                            userProjectRole.getUser().getId(),
-                            userProjectRole.getUser().getUsername(),
-                            userProjectRole.getUser().getEmail(),
-                            userProjectRole.getRole()))
-                    .toList();
+        return managedProjects.stream()
+                .map(project -> {
+                    List<UserProjectRole> members = userProjectRoleRepository.findAllUserByProjectIdRoleMember(project.getId());
 
-            return new ProjectManageResponseDto(
-                    new ProjectResponseDto(
-                            String.valueOf(project.getId()),
-                            project.getProjectKey(),
-                            project.getName(),
-                            project.getIssueCount()
-                    ),
-                    memberDtos
-            );
-        }).toList();
+                    if (members.isEmpty()) {
+                        return null;
+                    }
+
+                    List<UserProjectRoleResponseDto> memberDtos = members.stream()
+                            .map(userProjectRole -> new UserProjectRoleResponseDto(
+                                    userProjectRole.getUser().getId(),
+                                    userProjectRole.getUser().getUsername(),
+                                    userProjectRole.getUser().getEmail(),
+                                    userProjectRole.getRole()))
+                            .toList();
+
+                    return new ProjectManageResponseDto(
+                            new ProjectResponseDto(
+                                    String.valueOf(project.getId()),
+                                    project.getProjectKey(),
+                                    project.getName(),
+                                    project.getIssueCount()
+                            ),
+                            memberDtos
+                    );
+                })
+                .filter(Objects::nonNull)
+                .toList();
     }
-
-
 }
