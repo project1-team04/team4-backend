@@ -45,7 +45,9 @@ public class UserServiceImpl implements UserService {
 
         try {
             if (!profileImage.isEmpty()) {
-                firebaseStorageService.deleteImage(originalProfileImageUrl);
+                if(originalProfileImageUrl != null) {
+                    firebaseStorageService.deleteImage(originalProfileImageUrl);
+                }
                 updatedProfileImageUrl = firebaseStorageService.uploadImage(profileImage);
             }
         } catch (IOException e) {
