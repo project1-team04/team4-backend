@@ -7,7 +7,7 @@ import java.util.List;
 
 public class TempPasswordGenerator {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 사용할 문자와 숫자
-    private static final String SPECIAL_CHARACTERS = "!@#$%^&*()-_+=<>?"; // 특수문자 목록
+    private static final String SPECIAL_CHARACTERS = "!@"; // 특수문자 목록
     private static final int MIN_LENGTH = 8; // 최소 길이
     private static final int MAX_LENGTH = 12; // 최대 길이
     private static final SecureRandom RANDOM = new SecureRandom(); // 보안 강화된 난수 생성기
