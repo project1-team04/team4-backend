@@ -12,5 +12,6 @@ public class IssueUpdateDto {
     private String name;
     private String description;
     private String troubleShooting;
+    private Long assigneeUserId;
     private IssueStatus status;
 }

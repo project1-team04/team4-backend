@@ -29,7 +29,7 @@ public class InvitationUrlServiceImpl implements InvitationUrlService {
 
         InvitationUrl loginUrl = new InvitationUrl(
                 "LOGIN_URL",
-                "http://34.22.102.28/auth"
+                "http://localhost:3000/auth"
         );
         invitationUrlRepository.save(invitationUrl);
         invitationUrlRepository.save(loginUrl);

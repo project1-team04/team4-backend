@@ -6,6 +6,7 @@ import com.elice.team04backend.dto.label.LabelResponseDto;
 import com.elice.team04backend.dto.label.LabelUpdateDto;
 import com.elice.team04backend.dto.project.*;
 import com.elice.team04backend.dto.search.ProjectSearchCondition;
+import com.elice.team04backend.dto.userProjectRole.UserProjectImageResponseDto;
 import com.elice.team04backend.dto.userProjectRole.UserProjectRoleResponseDto;
 import com.elice.team04backend.service.LabelService;
 import com.elice.team04backend.service.ProjectService;
@@ -57,10 +58,10 @@ public class ProjectController {
 
     @Operation(summary = "프로젝트에 관련된 모든 유저를 조회", description = "프로젝트에 관련된 모든 유저들을 조회합니다.")
     @GetMapping("/users")
-    public ResponseEntity<List<UserProjectRoleResponseDto>> getUsersByProject(
+    public ResponseEntity<List<UserProjectImageResponseDto>> getUsersByProject(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam("projectId") Long projectId) {
-        List<UserProjectRoleResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
+        List<UserProjectImageResponseDto> users = userProjectRoleService.getUsersByProjectId(projectId);
         return ResponseEntity.ok(users);
     }
     @Operation(summary = "특정 유저가 pm인 프로젝트와 그 프로젝트의 유저들을 조회",
@@ -176,9 +177,8 @@ public class ProjectController {
     @PatchMapping("/assign-manager")
     public ResponseEntity<Void> assignManager(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam("projectId") Long projectId,
-            @RequestParam("newManagerId") Long newManagerId) {
-        projectService.assignManager(userDetails.getUserId(), projectId, newManagerId);
+            @RequestBody List<ProjectAssignRequestDto> assignRequestDtos) {
+        projectService.assignManager(userDetails.getUserId(), assignRequestDtos);
         return ResponseEntity.ok().build();
     }
 
