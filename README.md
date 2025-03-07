@@ -36,6 +36,13 @@
 
 ---
 
+## API 문서
+
+👉 [Swagger 링크](http://34.22.102.28:8080/swagger-ui/index.html#/)
+
+
+---
+
 ## 🎨 와이어프레임
 👉 [Figma 링크](https://www.figma.com/design/jPUtIC4aj6eWIFThgUOOIN/%EC%97%98%EB%A6%AC%EC%8A%A4-%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4%ED%8A%B8%EB%9E%99-1%EC%B0%A8-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8?node-id=0-1&p=f&t=KZs31uNgFLwv4KjM-0)
 
