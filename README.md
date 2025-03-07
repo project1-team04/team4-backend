@@ -79,3 +79,101 @@
 - **캐싱 및 성능 최적화 (Redis 활용)**
 - **보안 강화 (JWT 기반 인증 및 인가, 리프레시 토큰 지원)**
 - **GitLab Runner를 활용한 CI/CD 자동 배포**
+
+---
+
+## 🌍 환경 변수 설정 (application.yaml)
+
+```bash
+server:
+  port: 8080
+
+spring:
+  cache:
+    type: redis
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/threadly
+      database: threadly
+      auto-index-creation: true
+    redis:
+      host: localhost
+      port: 6379
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  application:
+    name: team04-backend
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  datasource:
+    username: "USER_USERNAME"
+    password: "USER_PASSWORD"
+    url: jdbc:mysql://localhost:49153/threadly?serverTimezone=UTC&characterEncoding=UTF-8
+
+  mail:
+    host: "USER_HOST"
+    port: "USER_PORT"
+    username: "USER_USERNAME"
+    password: "USER_PASSWORD"
+    properties:
+      smtp:
+        auth: true
+        timeout: 5000
+        starttls:
+          enable: true
+
+
+springdoc:
+  api-docs:
+    path: /api-docs  # API 문서 기본 경로
+  swagger-ui:
+    path: /swagger-ui.html  # Swagger UI 경로
+
+token:
+  secret: "USER_SECRET"
+  access-token-expiration: 600000  # 10분 (밀리초)
+  refresh-token-expiration: 1  # 1시간 (시간)
+
+firebase:
+  storage:
+    bucket-name: "USER_BUCKET_NAME"
+    json-path: "USER_JSON_PATH"
+
+
+oauth2:
+  google:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    client-secret: "client-secret"
+    access-scope: "access-scope"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+  kakao:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+  naver:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    client-secret: "client-secret"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+
+app:
+  page-size: 10
+
+```
+
+
