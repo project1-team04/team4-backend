@@ -7,19 +7,24 @@
 ## 📌 기술 스택
 
 ### 🔹 백엔드
-![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)  
-![SpringBoot](https://img.shields.io/badge/SpringBoot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)  
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)  
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)  
-![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)  
-![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)  
-![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)  
-![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+| 기술                                                                                                | 버전 |
+|---------------------------------------------------------------------------------------------------|---|
+| ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)|OpenJDK 17|
+| ![SpringBoot](https://img.shields.io/badge/SpringBoot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white) | 3.3.1|
+| ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) |8.3.0|
+| ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white) |3.3.1|
+| ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white) |8.0.4|
+| ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black) |9.1.1|
+
+![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white) 
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white) 
 
 ### 🔹 프론트엔드
-![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)  
-![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)  
-![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
+| 기술 | 버전 |
+|---|---|
+|![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)  |18|
+|![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)  |1.18.0|
+|![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)|Latest|
 
 ### 🔹 배포
 ![GitLab Runner](https://img.shields.io/badge/GitLab%20Runner-FC6D26?style=for-the-badge&logo=gitlab&logoColor=white)
@@ -33,6 +38,13 @@
 
 ## 🗂 ERD
 ![ERD](img/ERD.png)
+
+---
+
+## API 문서
+
+👉 [Swagger 링크](http://34.22.102.28:8080/swagger-ui/index.html#/)
+
 
 ---
 
@@ -72,3 +84,101 @@
 - **캐싱 및 성능 최적화 (Redis 활용)**
 - **보안 강화 (JWT 기반 인증 및 인가, 리프레시 토큰 지원)**
 - **GitLab Runner를 활용한 CI/CD 자동 배포**
+
+---
+
+## 🌍 환경 변수 설정 (application.yaml)
+
+```bash
+server:
+  port: 8080
+
+spring:
+  cache:
+    type: redis
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/threadly
+      database: threadly
+      auto-index-creation: true
+    redis:
+      host: localhost
+      port: 6379
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  application:
+    name: team04-backend
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+
+  datasource:
+    username: "USER_USERNAME"
+    password: "USER_PASSWORD"
+    url: jdbc:mysql://localhost:49153/threadly?serverTimezone=UTC&characterEncoding=UTF-8
+
+  mail:
+    host: "USER_HOST"
+    port: "USER_PORT"
+    username: "USER_USERNAME"
+    password: "USER_PASSWORD"
+    properties:
+      smtp:
+        auth: true
+        timeout: 5000
+        starttls:
+          enable: true
+
+
+springdoc:
+  api-docs:
+    path: /api-docs  # API 문서 기본 경로
+  swagger-ui:
+    path: /swagger-ui.html  # Swagger UI 경로
+
+token:
+  secret: "USER_SECRET"
+  access-token-expiration: 600000  # 10분 (밀리초)
+  refresh-token-expiration: 1  # 1시간 (시간)
+
+firebase:
+  storage:
+    bucket-name: "USER_BUCKET_NAME"
+    json-path: "USER_JSON_PATH"
+
+
+oauth2:
+  google:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    client-secret: "client-secret"
+    access-scope: "access-scope"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+  kakao:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+  naver:
+    oauth-uri: "oauth-uri"
+    client-id: "client-id"
+    client-secret: "client-secret"
+    redirect-uri: "redirect-uri"
+    grant-type: "grant-type"
+
+app:
+  page-size: 10
+
+```
+
+
